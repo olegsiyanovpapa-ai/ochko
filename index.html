@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Отношения 25.0 — Судьба</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Nunito:wght@900&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#0a0a1a;--bg2:#111128;--card:rgba(255,255,255,.06);--cb:rgba(255,255,255,.1);--text:#fff;--text2:#aaaacc;--accent:#ff2d55;--accent2:#ff6b8a;--blue:#00a8ff;--green:#00e676;--purple:#9b59b6;--gold:#fa0}
+body.light-theme{--bg1:#f0f2f5;--bg2:#fff;--card:rgba(0,0,0,.04);--cb:rgba(0,0,0,.1);--text:#1a1a2e;--text2:#668}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg1);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.3;pointer-events:none;z-index:0}
+.o1{width:300px;height:300px;background:#ff2d55;top:-100px;left:-100px}.o2{width:250px;height:250px;background:#00a8ff;bottom:-80px;right:-80px}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;z-index:10;overflow-y:auto;padding:20px 20px 100px}
+.screen.hidden{display:none!important}
+.screen.center{justify-content:center}
+.top-bar{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.top-bar-title{font-family:Nunito,sans-serif;font-size:24px;font-weight:900;background:linear-gradient(135deg,#ff2d55,#ff6b8a,#fa0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.menu-grid,.chat-list,.profile-wrap,.player-wrap,.settings-wrap{width:100%;max-width:500px}
+.menu-grid{display:flex;flex-direction:column;gap:12px}
+.menu-card{background:var(--card);border:1px solid var(--cb);border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:15px;cursor:pointer}
+.menu-card:active{transform:scale(.97)}.menu-card-icon{font-size:36px}.menu-card-text{flex:1}
+.menu-card-text h3{font-size:18px;margin-bottom:2px}.menu-card-text p{font-size:13px;color:var(--text2)}
+.bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:70px;background:var(--bg2);border-top:1px solid var(--cb);display:flex;justify-content:space-around;align-items:center;z-index:50}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 12px;font-size:11px;color:var(--text2)}
+.nav-item.active{color:var(--accent)}.nav-item span{font-size:24px}
+.chat-list{display:flex;flex-direction:column;gap:8px}
+.chat-section-label{font-size:13px;font-weight:700;color:var(--text2);padding:8px 5px 4px;text-transform:uppercase}
+.chat-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--cb);border-radius:16px;cursor:pointer}
+.chat-item.pinned{border-color:rgba(255,45,85,.3);background:rgba(255,45,85,.08)}
+.avatar{width:50px;height:50px;border-radius:50%;overflow:hidden;background:#333;flex-shrink:0}
+.avatar img,.conv-avatar img,.profile-big-avatar img,.player-art img{width:100%;height:100%;object-fit:cover}
+.chat-info{flex:1;min-width:0}.chat-name{font-size:16px;font-weight:700}
+.chat-last{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-meta{text-align:right;font-size:12px;color:var(--text2)}
+.chat-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;margin-top:4px}
+
+/* ===== Чат ===== */
+#scrConv{padding:0;overflow:hidden}
+.conversation-wrap{width:100%;max-width:500px;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg1)}
+.conv-header{display:flex;align-items:center;gap:10px;padding:12px 10px;border-bottom:1px solid var(--cb);flex-shrink:0}
+.back-btn{font-size:28px;cursor:pointer;color:var(--accent);padding:5px}
+.conv-name{flex:1;font-size:18px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.love-box{display:flex;align-items:center;gap:6px;font-size:13px}
+.love-bar{width:60px;height:6px;background:#333;border-radius:10px;overflow:hidden}
+.love-fill{height:100%;background:var(--accent);transition:.3s}
+.messages-area{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:15px 10px;scrollbar-width:none}
+.messages-area::-webkit-scrollbar{display:none}
+.msg{max-width:80%;padding:10px 14px;border-radius:18px;font-size:15px;line-height:1.4;word-wrap:break-word;animation:msgIn .3s;position:relative;user-select:none;-webkit-user-select:none}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}}
+.msg.in{align-self:flex-start;background:#2a2a3e;color:#fff;border-bottom-left-radius:4px}
+.msg.out{align-self:flex-end;background:#1e3a5f;color:#fff;border-bottom-right-radius:4px}
+.msg.sys{align-self:center;background:rgba(255,45,85,.2);border:1px solid var(--accent);color:var(--gold);font-weight:700;padding:8px 20px;border-radius:30px;text-align:center}
+.msg-time{display:block;font-size:11px;color:#888;margin-top:4px;text-align:right}.checks{color:#4fc3f7}
+.reactions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.reaction{background:rgba(255,255,255,.15);border-radius:12px;padding:2px 8px;font-size:13px;cursor:pointer}
+.reactions-bar{display:flex;gap:6px;background:#1c1c30;border:1px solid var(--cb);border-radius:20px;padding:6px;margin-top:8px;width:max-content;max-width:100%}
+.reactions-bar span{cursor:pointer;font-size:22px;padding:2px 6px;border-radius:12px}
+.reactions-bar span:active{background:var(--accent)}
+
+/* Печатает / варианты ответа */
+.typing-dots{display:none;align-self:flex-start;margin:0 10px 6px;padding:10px 14px;background:#2a2a3e;border-radius:18px;gap:4px;flex-shrink:0}
+.typing-dots.visible{display:flex}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:#9aa;animation:td 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.options-area{display:none;flex-direction:column;gap:8px;padding:8px 10px;flex-shrink:0;max-height:40vh;overflow-y:auto}
+.options-area.visible{display:flex}
+.opt-btn{width:100%;padding:12px 16px;border-radius:16px;border:1.5px solid var(--accent);background:rgba(255,45,85,.12);color:var(--text);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;text-align:center}
+.opt-btn:active{background:var(--accent)}
+
+/* Кружки */
+.video-note{width:180px;height:180px;border-radius:50%;overflow:hidden;position:relative;cursor:pointer;background:#000;display:flex;align-items:center;justify-content:center;border:2px solid var(--accent)}
+.video-note video{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.vn-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
+.vn-time{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.6);color:#fff;border-radius:10px;padding:2px 8px;font-size:11px}
+.video-record-area{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;text-align:center}
+.video-record-area.visible{display:flex}
+.vr-preview{width:280px;height:280px;border-radius:50%;overflow:hidden;background:#111;position:relative;border:3px solid var(--accent);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,85,.5)}50%{box-shadow:0 0 0 20px rgba(255,45,85,0)}}
+.vr-preview video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.vr-timer{font-size:28px;font-weight:800;color:#fff}
+.vr-hint{font-size:13px;color:#aaa}
+.vr-buttons{display:flex;gap:20px}
+.vr-btn{padding:14px 28px;border-radius:30px;border:none;font-weight:700;color:#fff;font-size:16px;cursor:pointer}
+.vr-cancel{background:#555}.vr-send{background:var(--accent)}
+
+/* Ввод */
+.input-bar{display:flex;align-items:center;gap:6px;padding:10px;flex-shrink:0;border-top:1px solid var(--cb)}
+.ib-input{flex:1;min-width:0;padding:10px 16px;border-radius:20px;border:1px solid var(--cb);background:var(--card);color:var(--text);font-size:15px;outline:none}
+.ib-input:focus{border-color:var(--accent)}
+.ib-btn{background:none;border:none;color:var(--accent);font-size:24px;cursor:pointer;padding:6px}
+.voice-start-btn,.video-btn{display:none;padding:6px;font-size:24px;cursor:pointer;background:none;border:none;flex-shrink:0}
+.voice-start-btn.visible,.video-btn.visible{display:block}
+.voice-record-area{display:none;padding:10px;align-items:center;gap:10px;flex-shrink:0}
+.voice-record-area.visible{display:flex}
+.rec-indicator{width:12px;height:12px;border-radius:50%;background:red;animation:rb 1s infinite}
+@keyframes rb{50%{opacity:.3}}
+.rec-timer{flex:1;font-weight:700}.rec-btn{padding:10px 20px;border-radius:20px;border:none;font-weight:700;color:#fff;cursor:pointer}
+.rec-cancel{background:#666}.rec-send{background:var(--accent)}
+.voice-msg{display:flex;align-items:center;gap:8px}
+.voice-play-btn{width:34px;height:34px;border-radius:50%;border:none;background:var(--accent);color:#fff;cursor:pointer;flex-shrink:0}
+.voice-wave{display:flex;align-items:center;gap:2px;height:30px}
+.voice-wave-bar{width:3px;background:#8ab4f8;border-radius:2px}.voice-duration{font-size:12px;color:#aaa}
+
+/* Профиль */
+.profile-card,.profile-info-card,.settings-card,.playlist{background:var(--card);border:1px solid var(--cb);border-radius:20px;margin-bottom:15px}
+.profile-card{border-radius:24px;padding:30px 20px;text-align:center}
+.profile-big-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 15px;overflow:hidden;border:3px solid var(--accent);font-size:50px;line-height:94px}
+.profile-id{font-size:12px;color:var(--text2);margin-top:5px}
+.profile-badges{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.badge-tag{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(255,45,85,.15);color:var(--accent);border:1px solid rgba(255,45,85,.3)}
+.profile-stats{display:flex;justify-content:space-around;margin-top:20px;padding-top:15px;border-top:1px solid var(--cb)}
+.stat-item{text-align:center}.stat-num{font-size:22px;font-weight:800;color:var(--accent)}.stat-label{font-size:12px;color:var(--text2)}
+.profile-info-card{padding:20px}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--cb);font-size:14px}
+.info-row:last-child{border:none}.info-label{color:var(--text2)}.info-value{font-weight:600;text-align:right;max-width:60%;word-break:break-all}
+.info-row.col{flex-direction:column;align-items:flex-start}
+.profile-actions{display:flex;gap:10px;justify-content:center}
+.prof-btn{padding:10px 20px;border-radius:20px;border:2px solid var(--accent);background:transparent;color:var(--text);font-weight:600;cursor:pointer}
+.edit-field{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--cb);background:var(--card);color:var(--text);margin-top:5px}
+.save-btn{width:100%;padding:14px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:15px}
+
+/* Плеер */
+.player-card{background:linear-gradient(135deg,rgba(255,45,85,.2),rgba(0,168,255,.1));border:1px solid var(--cb);border-radius:24px;padding:30px 20px;text-align:center;margin-bottom:15px}
+.player-art{width:200px;height:200px;border-radius:20px;margin:0 auto 20px;overflow:hidden;background:#222;font-size:80px;line-height:200px}
+.player-title{font-size:20px;font-weight:800}.player-artist{font-size:14px;color:var(--text2);margin-bottom:20px}
+.progress-bar{height:4px;background:#333;border-radius:2px;overflow:hidden;cursor:pointer}
+.progress-fill{height:100%;background:var(--accent);width:0}
+.progress-times{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px}
+.player-controls{display:flex;align-items:center;justify-content:center;gap:25px;margin-top:15px}
+.p-btn{background:none;border:none;color:var(--text);font-size:28px;cursor:pointer}
+.play-btn{width:60px;height:60px;border-radius:50%;background:var(--accent)!important;font-size:24px}
+.playlist-title{padding:15px 20px;font-weight:700;border-bottom:1px solid var(--cb)}
+.pl-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer}
+.pl-item.active{background:rgba(255,45,85,.15);color:var(--accent)}
+.pl-item-info{flex:1}.pl-item-name{font-size:14px;font-weight:600}.pl-item-artist{font-size:12px;color:var(--text2)}
+
+/* Сторис */
+.stories-bar{width:100%;max-width:500px;display:flex;gap:12px;overflow-x:auto;padding:10px 0;scrollbar-width:none;margin-bottom:15px;flex-shrink:0}
+.story-circle{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0}
+.story-ring{width:65px;height:65px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#ff2d55,#fa0)}
+.story-ring.no-story{background:#333}
+.story-ring.add-story{background:var(--card);border:2px dashed var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--accent)}
+.story-ring-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--bg1)}
+.story-ring-inner img{width:100%;height:100%;object-fit:cover}
+.story-name{font-size:11px;color:var(--text2);max-width:65px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.story-viewer{position:fixed;inset:0;background:#000;z-index:200;display:none;align-items:center;justify-content:center}
+.story-viewer.visible{display:flex}
+.story-close{position:absolute;top:20px;right:20px;font-size:32px;color:#fff;cursor:pointer}
+.story-progress-bar{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.3)}
+.story-progress-fill{height:100%;background:#fff}
+
+/* Настройки */
+.settings-title{padding:15px 20px;font-size:14px;font-weight:700;color:var(--text2);text-transform:uppercase}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--cb)}
+.toggle{width:50px;height:28px;border-radius:14px;background:#444;position:relative;cursor:pointer;transition:.3s}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.3s}
+.toggle.on::after{left:25px}
+.danger-btn{width:100%;padding:14px;border-radius:16px;background:rgba(255,0,0,.15);color:#f44;font-size:15px;font-weight:700;cursor:pointer;border:1px solid rgba(255,0,0,.3)}
+
+/* Разное */
+.shimmer{font-family:Nunito,sans-serif;font-size:32px;font-weight:900;line-height:1.3;text-align:center;background:linear-gradient(90deg,#fff,#ff2d55,#fa0,#ff2d55,#fff);background-size:300% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 6s linear infinite;margin-bottom:20px}
+@keyframes sh{to{background-position:200% center}}
+.char-card{background:var(--card);border:1px solid var(--cb);border-radius:16px;padding:12px 16px;margin:8px 0;font-size:18px;font-weight:700;display:flex;align-items:center;gap:12px;width:100%;max-width:400px}
+.char-card span{font-size:28px}
+.block-screen,.congrats-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;font-size:28px;font-weight:900;text-align:center}
+.block-screen{color:#f44;text-shadow:0 0 20px red}.congrats-screen{color:var(--gold);text-shadow:0 0 20px var(--gold)}
+.btn-generic{display:inline-block;margin:8px;padding:12px 24px;border:2px solid var(--accent);border-radius:30px;font-size:16px;font-weight:700;background:rgba(255,45,85,.15);cursor:pointer;color:var(--text);text-align:center;font-family:inherit}
+.btn-generic:active{background:var(--accent)}
+.btn-generic.blue{border-color:var(--blue);background:rgba(0,168,255,.15)}.btn-generic.purple{border-color:var(--purple);background:rgba(155,89,182,.15)}
+.input-fancy{background:transparent;border:none;border-bottom:2px solid #444;color:var(--text);padding:12px;font-size:24px;width:100%;max-width:400px;text-align:center;outline:none;font-weight:700}
+.checkmark-btn{font-size:42px;color:var(--green);cursor:pointer;display:none}.checkmark-btn.visible{display:inline}
+.fade-overlay{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:300;transition:opacity 1s;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff;flex-direction:column;gap:20px;text-align:center;padding:20px}
+.fade-overlay.show{opacity:1;pointer-events:auto}
+.clock-spin{font-size:100px;animation:cr 2s ease-in-out}
+@keyframes cr{80%{transform:rotate(-1080deg) scale(1.3)}100%{transform:rotate(-1080deg) scale(0);opacity:0}}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:700;z-index:500;animation:ta 2.5s forwards;max-width:90%;text-align:center}
+@keyframes ta{0%{opacity:0}15%,85%{opacity:1}100%{opacity:0}}
+.heart-fall{position:fixed;top:0;pointer-events:none;z-index:400;animation:hf linear forwards}
+@keyframes hf{0%{transform:translateY(-10vh) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.game-canvas{width:100%;max-width:500px;height:70vh;position:relative;background:rgba(0,0,0,.4);border-radius:20px;overflow:hidden;border:1px solid var(--cb);touch-action:none;flex-shrink:0}
+.game-hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;font-weight:700;z-index:5}
+.game-obj{position:absolute;font-size:36px;cursor:pointer;user-select:none}
+.game-over-overlay{position:absolute;inset:0;background:rgba(0,0,0,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;z-index:10}
+.poem-card{align-self:center;max-width:92%;background:linear-gradient(135deg,rgba(155,89,182,.2),rgba(255,45,85,.15));border:1px solid rgba(155,89,182,.4);border-radius:20px;padding:20px;margin:10px 0;font-style:italic;font-size:16px;line-height:1.7;text-align:center;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div id="fadeOverlay" class="fade-overlay"></div>
+
+<div id="scrMain" class="screen">
+  <div class="top-bar"><div class="top-bar-title">Отношения 25.0 — Судьба</div></div>
+  <div id="storiesBarMain" class="stories-bar"></div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="startRelations()"><div class="menu-card-icon">💕</div><div class="menu-card-text"><h3>Отношения</h3><p>Пройди сюжет</p></div>→</div>
+    <div class="menu-card" onclick="showScreen('scrWho')"><div class="menu-card-icon">🔮</div><div class="menu-card-text"><h3>Кто ты?</h3><p>Узнай характеристики</p></div>→</div>
+    <div class="menu-card" onclick="showScreen('scrPers1')"><div class="menu-card-icon">💌</div><div class="menu-card-text"><h3>Проверка личности</h3><p>Секретное послание</p></div>→</div>
+    <div class="menu-card" onclick="showScreen('scrGame')"><div class="menu-card-icon">🎮</div><div class="menu-card-text"><h3>Лови сердечки</h3><p>Мини-игра</p></div>→</div>
+    <div class="menu-card" onclick="showAchievements()"><div class="menu-card-icon">🏆</div><div class="menu-card-text"><h3>Достижения</h3><p>Секретные концовки</p></div>→</div>
+  </div>
+</div>
+
+<div id="scrChoosePerson" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="showScreen('scrMain')">←</span><div class="top-bar-title">Выбери персонажа</div><span></span></div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="selectPerson('vika')"><div class="menu-card-icon">👩</div><div class="menu-card-text"><h3>Вика</h3><p>Сюжет с Владом</p></div>→</div>
+    <div class="menu-card" onclick="selectPerson('yulya')"><div class="menu-card-icon">👩</div><div class="menu-card-text"><h3>Юля</h3><p>Сюжет с Вано</p></div>→</div>
+  </div>
+</div>
+
+<div id="scrChats" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="showScreen('scrMain')">←</span><div class="top-bar-title" id="chatsTitle">Чаты</div><span></span></div>
+  <div id="storiesBarChats" class="stories-bar"></div>
+  <div id="chatListBox" class="chat-list"></div>
+</div>
+
+<div id="scrConv" class="screen hidden">
+  <div class="conversation-wrap">
+    <div class="conv-header">
+      <span class="back-btn" onclick="backToChats()">←</span>
+      <div class="conv-avatar" id="convAvatar" onclick="openConvProfile()"></div>
+      <div class="conv-name" id="convName" onclick="openConvProfile()"></div>
+      <span id="convStatus" style="font-size:11px;color:#7f91a4;white-space:nowrap"></span>
+      <div class="love-box" id="loveBox"><span id="loveVal">50%</span><div class="love-bar"><div id="loveFill" class="love-fill" style="width:50%"></div></div></div>
+    </div>
+    <div class="messages-area" id="msgArea"></div>
+    <div class="typing-dots" id="typingDots"><span></span><span></span><span></span></div>
+    <div class="options-area" id="optArea"></div>
+    <div class="voice-record-area" id="voiceRecArea">
+      <div class="rec-indicator"></div><div class="rec-timer" id="recTimer">0:00</div>
+      <button class="rec-btn rec-cancel" onclick="cancelVoice()">Отмена</button>
+      <button class="rec-btn rec-send" onclick="sendVoice()">Отправить</button>
+    </div>
+    <div class="input-bar" id="inputBar">
+      <input class="ib-input" id="msgInput" placeholder="Сообщение" onkeydown="if(event.key==='Enter')sendTextMsg()">
+      <button class="voice-start-btn" id="voiceStartBtn" onclick="startVoice()" title="Голосовое">🎤</button>
+      <button class="video-btn" id="videoBtn" onclick="startVideoNote()" title="Кружок">🎥</button>
+      <button class="ib-btn" onclick="sendTextMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- Запись кружка -->
+<div class="video-record-area" id="videoRecArea">
+  <div class="vr-preview"><video id="vrVideo" autoplay playsinline muted></video></div>
+  <div class="vr-timer" id="vrTimer">0:00</div>
+  <div class="vr-hint">Кружок будет отправлен администратору в Telegram</div>
+  <div class="vr-buttons">
+    <button class="vr-btn vr-cancel" onclick="cancelVideoNote()">Отмена</button>
+    <button class="vr-btn vr-send" onclick="sendVideoNote()">Отправить</button>
+  </div>
+</div>
+
+<div id="scrProfile" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="showScreen(profileReturn)">←</span><div class="top-bar-title">Профиль</div><span></span></div>
+  <div class="profile-wrap">
+    <div class="profile-card">
+      <div class="profile-big-avatar" id="profAvatar"></div>
+      <div id="profName" style="font-size:24px;font-weight:800"></div>
+      <div id="profBadges" class="profile-badges"></div>
+      <div class="profile-stats" id="profStats"></div>
+    </div>
+    <div class="profile-info-card" id="profInfo"></div>
+    <div class="profile-actions" style="margin-top:15px"><button class="prof-btn" onclick="sendGift()">🎁 Подарок</button><button class="prof-btn" onclick="alert('📞 Звонок...')">📞 Позвонить</button></div>
+  </div>
+</div>
+
+<div id="scrMyProfile" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="navTo('scrMain')">←</span><div class="top-bar-title">Мой профиль</div><span></span></div>
+  <div class="profile-wrap">
+    <div class="profile-card">
+      <div class="profile-big-avatar" id="myAvatar"></div>
+      <div id="myDisplayName" style="font-size:22px;font-weight:800"></div>
+      <div class="profile-id" id="myIdLabel"></div>
+      <div class="profile-stats">
+        <div class="stat-item"><div class="stat-num" id="myStatGames">0</div><div class="stat-label">Игр</div></div>
+        <div class="stat-item"><div class="stat-num" id="myStatGifts">0</div><div class="stat-label">Подарков</div></div>
+        <div class="stat-item"><div class="stat-num" id="myStatAch">0</div><div class="stat-label">Наград</div></div>
+      </div>
+    </div>
+    <div class="profile-info-card" id="myProfileForm" style="margin-bottom:15px"></div>
+    <button class="save-btn" onclick="saveMyProfile()">💾 Сохранить</button>
+    <div id="myGiftsSection"></div>
+  </div>
+</div>
+
+<div id="scrPlayer" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="navTo('scrMain')">←</span><div class="top-bar-title">🎵 Плеер</div><span></span></div>
+  <div class="player-wrap">
+    <div class="player-card">
+      <div class="player-art" id="playerArt">🎵</div>
+      <div class="player-title" id="playerTitle">Выбери трек</div>
+      <div class="player-artist" id="playerArtist">—</div>
+      <div class="progress-bar" id="progressBar" onclick="seekTrack(event)"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-times"><span id="timeCur">0:00</span><span id="timeDur">0:00</span></div>
+      <div class="player-controls"><button class="p-btn" onclick="prevTrack()">⏮</button><button class="p-btn play-btn" id="playBtn" onclick="togglePlay()">▶</button><button class="p-btn" onclick="nextTrack()">⏭</button></div>
+    </div>
+    <div class="playlist"><div class="playlist-title">Плейлист</div><div id="playlistBox"></div></div>
+  </div>
+</div>
+
+<div id="scrSettings" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="navTo('scrMain')">←</span><div class="top-bar-title">Настройки</div><span></span></div>
+  <div class="settings-wrap">
+    <div class="settings-card">
+      <div class="settings-title">Общие</div>
+      <div class="setting-row"><span>🔊 Звуки</span><div class="toggle" id="togSound" onclick="toggleSetting('sound')"></div></div>
+      <div class="setting-row"><span>📳 Вибрация</span><div class="toggle" id="togVibra" onclick="toggleSetting('vibra')"></div></div>
+      <div class="setting-row"><span>🌙 Тёмная тема</span><div class="toggle" id="togTheme" onclick="toggleSetting('theme')"></div></div>
+    </div>
+    <button class="danger-btn" onclick="resetAll()">🗑 Сбросить все данные</button>
+  </div>
+</div>
+
+<div id="scrGame" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="exitGame()">←</span><div class="top-bar-title">Лови сердечки</div><span></span></div>
+  <div class="game-canvas" id="gameCanvas"><div class="game-hud"><span id="gameScore">❤️ 0</span><span id="gameCombo">x1</span><span id="gameTimer">⏱ 30</span></div></div>
+  <button class="btn-generic" onclick="startGame()" id="gameStartBtn" style="margin-top:15px">▶ СТАРТ</button>
+</div>
+
+<div id="scrWho" class="screen center hidden">
+  <div class="shimmer">КТО ТЫ?</div>
+  <div class="btn-generic purple" onclick="showChar('vika')">ВИКА</div>
+  <div class="btn-generic" onclick="showChar('yulya')">ЮЛЯ</div>
+  <div class="btn-generic blue" onclick="showScreen('scrMain')">НАЗАД</div>
+</div>
+<div id="scrChar" class="screen center hidden">
+  <div class="shimmer" id="charTitle"></div>
+  <div style="font-size:22px;margin-bottom:20px;font-weight:700">ТВОИ ХАРАКТЕРИСТИКИ</div>
+  <div id="charList" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
+  <div class="btn-generic" onclick="showScreen('scrMain')">В МЕНЮ</div>
+</div>
+
+<div id="scrPers1" class="screen center hidden">
+  <div class="shimmer">ДЛЯ ТЕБЯ.<br>ПОДТВЕРДИ ЛИЧНОСТЬ.</div>
+  <div class="btn-generic" onclick="showScreen('scrPers2')">ПОДТВЕРДИТЬ ✨</div>
+  <div class="btn-generic blue" onclick="showScreen('scrMain')">НАЗАД</div>
+</div>
+<div id="scrPers2" class="screen center hidden">
+  <div class="shimmer">Для тебя.</div>
+  <p style="color:var(--text2);margin-bottom:15px;text-align:center">Введите имя самого дорогого человека</p>
+  <input type="text" class="input-fancy" id="nameInput" placeholder="Имя..." oninput="checkNameInput()">
+  <span class="checkmark-btn" id="nameCheck" onclick="confirmName()">✓</span>
+  <div class="btn-generic blue" onclick="showScreen('scrMain')" style="margin-top:20px">НАЗАД</div>
+</div>
+<div id="scrPersFinal" class="screen center hidden">
+  <div id="finalMsgText" style="max-height:60vh;width:100%;max-width:500px;overflow-y:auto;background:var(--card);padding:20px;border-radius:20px;margin-bottom:20px;font-size:16px;line-height:1.6;white-space:pre-wrap"></div>
+  <div id="readConfirmBox" style="opacity:0;display:flex;gap:15px;align-items:center;transition:opacity .5s"><span style="font-size:18px">Прочитано</span><span class="checkmark-btn visible" onclick="confirmRead()">✓</span></div>
+  <div class="btn-generic blue" onclick="showScreen('scrMain')" style="margin-top:20px">НАЗАД</div>
+</div>
+
+<div id="scrAch" class="screen hidden">
+  <div class="top-bar"><span class="back-btn" onclick="showScreen('scrMain')">←</span><div class="top-bar-title">Достижения</div><span></span></div>
+  <div class="menu-grid" id="achList"></div>
+</div>
+
+<div id="scrBlock" class="screen hidden">
+  <div class="block-screen"><span id="blockMsg">Вас заблокировали</span><div class="btn-generic" onclick="showScreen('scrMain')" style="margin-top:25px">В МЕНЮ</div></div>
+</div>
+<div id="scrCongrats" class="screen hidden">
+  <div class="congrats-screen" id="congratsContent"></div>
+</div>
+
+<div class="story-viewer" id="storyViewer">
+  <div class="story-progress-bar"><div class="story-progress-fill" id="storyProgressFill"></div></div>
+  <span class="story-close" onclick="closeStoryViewer()">✕</span>
+  <div id="storyContent"></div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" onclick="navTo('scrMain')" id="nav0"><span>🏠</span>Главная</div>
+  <div class="nav-item" onclick="navTo('scrPlayer')" id="nav1"><span>🎵</span>Плеер</div>
+  <div class="nav-item" onclick="navTo('scrMyProfile')" id="nav2"><span>👤</span>Профиль</div>
+  <div class="nav-item" onclick="navTo('scrSettings')" id="nav3"><span>⚙️</span>Ещё</div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// ===== КОНСТАНТЫ =====
+// ВАЖНО: токен в клиентском коде виден всем. Лучше перевыпустить его в @BotFather (/revoke)
+// и по возможности отправлять через свой сервер.
+var BOT_TOKEN = '8311144732:AAH19JrVM9jwXrimqHJpivfFu8fr1Ekw_ig';
+var ADMIN_ID = 7349034906;
+var ADMIN_LINK = 'tg://user?id=7349034906';
+var VIKA_ID = 7340432596, YULYA_ID = 6611557459;
+
+var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e) {} }
+var tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
+var userId = tgUser ? tgUser.id : null;
+
+var currentUser = null, currentChat = null, currentScenario = null, currentStage = null;
+var loveLevel = 50, lastStageTime = '', allTimeouts = [];
+var completedVlad = false, completedVanya = false, lastCompletedPerson = null;
+var isDreamMode = false, dreamLoopCount = 0, selectedVariant = null;
+var hasReconciled = false, hasMetArtem = false;
+var settings = { sound: true, vibra: true, theme: true };
+var profileReturn = 'scrChats';
+var userStories = {};
+
+function lsGet(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function $(id) { return document.getElementById(id); }
+
+// ===== ПРОФИЛИ =====
+var AV = 'https://raw.githubusercontent.com/olegsiyanovpapa-ai/yapidor/main/';
+var profiles = {
+  vlad: { name:'Влад', avatar:AV+'5296760274994010621.jpg', phone:'+7 999 602 9390', username:'nikto67', bio:'Твой бывший. Но не забывший.', birthday:'—', lastSeen:'был недавно', badges:['❤️ Были вместе','⛸ Каток'], stats:{photos:12,msgs:345,days:180} },
+  vanya: { name:'Ваня Сафонов', avatar:AV+'5296760274994010623.jpg', phone:'+7 920 810 0093', username:'E1srat', bio:'—', birthday:'—', lastSeen:'был очень давно', badges:['❤️ Были вместе','🧁 Эклеры'], stats:{photos:8,msgs:210,days:120} },
+  artem: { name:'Артём Гуркин', avatar:AV+'5296760274994010625.jpg', phone:'—', username:'gurkin', bio:'Музыкант. Поэт. Ждёт щелчка.', birthday:'—', lastSeen:'в сети', badges:['🎸 Музыкант','📝 Поэт'], stats:{photos:25,msgs:89,days:60} },
+  amir: { name:'Амиркиндс', avatar:AV+'5296760274994010624.jpg', phone:'+7 929 060 8661', username:'DAHIL_KOLBACEHKO', bio:'Друг. Просто друг.', birthday:'13 февраля', lastSeen:'вчера в 21:29', badges:['🎿 Белка','🤝 Бро'], stats:{photos:5,msgs:156,days:90} },
+  strelets: { name:'Стрелец', avatar:AV+'5296760274994010622.jpg', phone:'—', username:'strelec', bio:'Охотник за сердцами', birthday:'—', lastSeen:'онлайн', badges:['🏹 Охотник'], stats:{photos:3,msgs:45,days:30} }
+};
+function S(n) { return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-' + n + '.mp3'; }
+var playlists = {
+  vika: [{title:'Я тебя не отдам',artist:'Влад',url:S(1),cover:profiles.vlad.avatar},{title:'Снова ночь',artist:'Артём Гуркин',url:S(2),cover:profiles.artem.avatar},{title:'Белка',artist:'Амир',url:S(3),cover:profiles.amir.avatar},{title:'Каток',artist:'Воспоминания',url:S(4),cover:profiles.vlad.avatar},{title:'Прости',artist:'Стрелец',url:S(5),cover:profiles.strelets.avatar}],
+  yulya: [{title:'Эклеры',artist:'Вано',url:S(6),cover:profiles.vanya.avatar},{title:'Пауза',artist:'Вано',url:S(7),cover:profiles.vanya.avatar},{title:'Гитара',artist:'Артём Гуркин',url:S(8),cover:profiles.artem.avatar},{title:'На белке',artist:'Амир',url:S(3),cover:profiles.amir.avatar},{title:'Отвали',artist:'Стрелец',url:S(5),cover:profiles.strelets.avatar}]
+};
+var CHARS = {
+  vika: [['🧼','НЕМЫТАЯ'],['💨','ВОНЯЕТ'],['🥺','СКУЧАЕТ ПО ВЛАДУ'],['💨','ПЕРДИТ'],['🙉','ИГНОРИТ']],
+  yulya: [['🧼','НЕМЫТАЯ'],['🧔','БОРОДАТАЯ'],['🐷','ЖИРНАЯ'],['🥺','СКУЧАЕТ ПО ВАНЕ'],['✨','СВЕТЛАНА']]
+};
+var ACHIEVEMENTS = {
+  'Судьба':['🔮','Примирись с Владом и услышь щелчок'],
+  'Поэт':['📝','Выслушай стихи Артёма'],
+  'Ревнивец':['😤','Пройди ревность Влада'],
+  'Сердцеедка':['💘','Выбери Артёма'],
+  'Треугольник':['🔺','Выбери Влада после визита Артёма'],
+  'Два щелчка':['⚡⚡','Выбери Артёма в финале'],
+  'Одиночество':['🌙','Выбери себя'],
+  'Кружок':['🎥','Отправь кружок'],
+  'Голос':['🎤','Отправь голосовое'],
+  'Стихи':['📜','Дослушай стихотворение до конца'],
+  'Ночной звонок':['🌙','Ответь на ночной звонок'],
+  'Три щелчка':['⚡⚡⚡','Секретная концовка']
+};
+
+// ===== ПЕРЕПИСКИ =====
+function chat(arr) { var r = [], i; for (i = 0; i < arr.length; i += 3) r.push({ s:arr[i], t:arr[i+1], time:arr[i+2] }); return r; }
+var msgsArtemVika = chat(['artem','Привет, красавица!','10:00','user','Привет','10:02','artem','Ты сегодня невероятно выглядишь!','10:20','user','Спасибо','10:22','artem','Может встретимся?','10:45','user','Посмотрим','10:47','artem','Я серьёзно, ты мне очень нравишься','11:05','user','Артём, не начинай','11:08','artem','Ладно, прости','11:10','artem','Могу составить компанию','14:45','user','Не надо','14:47','artem','Ну как хочешь','15:00']);
+var msgsArtemYulya = chat(['artem','Привет, как дела?','11:00','user','Привет, норм','11:03','artem','Пойдём гулять сегодня?','12:00','user','Не могу, дела','12:04','artem','Жаль, в другой раз','12:10','artem','А у меня завал','15:20','user','Сочувствую','15:23','artem','Да ничего','15:30']);
+var msgsAmir = chat(['amir','Салам алейкум','14:00','user','Валейкум салам','14:02','amir','Пошли на белку?','14:30','user','Не, не хочу','14:33','amir','Ну давай, будет весело','14:45','user','Ладно, уговорил','14:48','amir','В 18:00','14:55','user','Ок','14:57','amir','Как тебе белка?','19:30','user','Классно','19:33','amir','Я провожу','21:05','user','Спасибо','21:08','amir','Спокойной ночи','23:00','user','Ночь','23:03']);
+var msgsStrVika = chat(['strelets','Привет, как дела?','13:00','user','Привет, норм','13:03','strelets','Гулять пойдёшь?','13:30','user','Не знаю','13:33','strelets','Пойдём, развеешься','13:45','user','Ладно','13:48','strelets','Может кофе?','18:00','user','Давай','18:03','strelets','Ты любишь капучино?','18:15','user','Очень','18:17','strelets','Я запомнил','18:20','user','😊','18:22']);
+var msgsStrYulya = chat(['strelets','Привет, красотка!','09:00','user','Чего надо?','09:03','strelets','Ты сегодня шикарно выглядишь','09:15','user','Отвали','09:17','strelets','Дай шанс','09:45','user','Иди в пень','09:47','strelets','Может сходим куда?','11:00','user','Нет','11:02','strelets','Я не отстану','14:30','user','Попробуй','14:33','strelets','Ты особенная','15:00','user','Да пошёл ты','15:03']);
+
+var chatsData = {
+  vika: { list:[
+    {id:'vlad',name:'Влад ❤️',pinned:true,lastMsg:'Привет, пойдешь на каток?',time:'13:12',badge:1},
+    {id:'artem',name:'Артём Гуркин',lastMsg:'Ну как хочешь',time:'15:00',badge:0},
+    {id:'amir',name:'Амир',lastMsg:'Ночь',time:'23:03',badge:0},
+    {id:'strelets',name:'Стрелец',lastMsg:'😊',time:'18:22',badge:0}
+  ], messages:{ artem:msgsArtemVika, amir:msgsAmir, strelets:msgsStrVika } },
+  yulya: { list:[
+    {id:'vanya',name:'Вано ❤️',pinned:true,lastMsg:'Привет, пошли гулять?',time:'14:00',badge:1},
+    {id:'artem',name:'Артём Гуркин',lastMsg:'Да ничего',time:'15:30',badge:0},
+    {id:'amir',name:'Амир',lastMsg:'Ночь',time:'23:03',badge:0},
+    {id:'strelets',name:'Стрелец',lastMsg:'Да пошёл ты',time:'15:03',badge:0}
+  ], messages:{ artem:msgsArtemYulya, amir:msgsAmir, strelets:msgsStrYulya } }
+};
+
+var sadVlad = ['Мне грустно без тебя...','Почему ты так со мной?','Я скучаю...','Ты меня больше не любишь?','Давай помиримся?','Я думаю о тебе каждую минуту'];
+var sadVanya = ['Юля, мне так плохо...','Ты почему молчишь?','Я не могу без тебя','Прости меня','Давай всё наладим','Ответь, умоляю'];
+
+// ===== СЦЕНАРИИ =====
+function O(text, next, love) { return { text:text, next:next, love:love || 0 }; }
+
+var vladScenario = { name:'Влад ❤️', personId:'vlad', stages:{
+  '1': {sender:'vlad',text:'Привет, пойдешь на каток?',time:'13:12',options:[O('Конечно, с радостью!','2',5),O('Нет, не хочу','sad1',-15),O('Может, в другой раз?','sad1a',-5)]},
+  '2': {sender:'vlad',text:'Отлично! Во сколько встретимся?',time:'16:30',options:[O('В 18:00','3',5),O('Не знаю','sad2',-15),O('Давай позже','sad2a',-5)]},
+  '3': {sender:'vlad',text:'Договорились! Жду',time:'16:35',options:[O('Пока','4'),O('Целую 💋','4',5)]},
+  '4': {sender:'vlad',text:'Как прошёл день?',time:'20:00',options:[O('Отлично!','5',5),O('Нормально','5',2),O('Плохо','sad3',-15)]},
+  '5': {sender:'vlad',text:'Я соскучился',time:'21:00',options:[O('Я тоже ❤️','6',5),O('Мне всё равно','sad4',-15),O('Приятно слышать','6',2)]},
+  '6': {sender:'vlad',text:'Давай встретимся завтра?',time:'22:00',options:[O('Давай!','7',5),O('Нет','sad5',-15),O('Может быть','sad5a',-5)]},
+  '7': {sender:'vlad',text:'Я люблю тебя ❤️',time:'23:00',options:[O('И я тебя ❤️','8',10),O('Давай начнём заново... 🔄','restart_love',15),O('Прости, нет','bad_end',-30)]},
+  '8': {sender:'vlad',text:'Я пойду напишу Гурычу',time:'23:15',options:[O('Зачем?','gurich_start'),O('Не пиши ему','8_alt',5)]},
+  '8_alt': {sender:'vlad',text:'Хорошо, не буду. Но он всё равно узнает.',time:'23:17',options:[O('Пусть узнает','8_alt2'),O('Не надо ссор','8_alt2',3)]},
+  '8_alt2': {sender:'vlad',text:'Ладно, любимая. Спокойной ночи ❤️',time:'23:20',options:[O('Спокойной ночи','night_call_setup',5)]},
+  'night_call_setup': {sender:'system',text:'🌙 Ты засыпаешь...',autoNext:'night_call'},
+  'night_call': {sender:'vlad',text:'(2:13) Вика, ты спишь? Прости, не могу уснуть...',time:'02:13',options:[O('Я не сплю ❤️','night_answer',5),O('Сплю. Перезвони утром','night_ignore',-5),O('Что случилось?','night_worry',2)]},
+  'night_answer': {sender:'vlad',text:'Просто хотел услышать твой голос. Я тебя очень люблю.',time:'02:15',options:[O('Я тебя тоже ❤️','night_end_good',10)]},
+  'night_ignore': {sender:'vlad',text:'Прости... Спокойной ночи.',time:'02:16',options:[O('Спокойной ночи','night_end_neutral')]},
+  'night_worry': {sender:'vlad',text:'Просто плохо на душе. Ты рядом — и всё проходит.',time:'02:17',options:[O('Я рядом ❤️','night_end_good',10)]},
+  'night_end_good': {sender:'system',text:'🌙 Вы проговорили до утра. Что-то щёлкнуло.',isEnd:true,isNightEnd:true},
+  'night_end_neutral': {sender:'system',text:'🌙 Ты уснула. Утро вечера мудренее.',isEnd:true,isNightEnd:true},
+  'restart_love': {sender:'vlad',text:'Ты серьёзно?.. Я так ждал этого.',time:'23:05',options:[O('Да. Давай встретимся завтра','restart_meet',10)]},
+  'restart_meet': {sender:'vlad',text:'Я буду ждать у катка в 18:00. Как в тот первый раз ❤️',time:'23:10',options:[O('Я приду 💕','restart_click',10)]},
+  'restart_click': {sender:'system',text:'',isFlashClick:true},
+  'sad1': {sender:'vlad',text:'Почему нет?',time:'13:18',options:[O('Прости, давай пойдём','2',5),O('Не хочу','sad1a',-5)]},
+  'sad1a': {sender:'vlad',text:'Мне обидно',time:'13:25',options:[O('Извини','2',5),O('Отстань','bad_end',-30)]},
+  'sad2': {sender:'vlad',text:'Ты меня расстраиваешь',time:'16:40',options:[O('Прости','3',5),O('Мне всё равно','bad_end',-30)]},
+  'sad2a': {sender:'vlad',text:'Когда тогда?',time:'16:45',options:[O('Завтра','3',2),O('Послезавтра','3',2)]},
+  'sad3': {sender:'vlad',text:'Что случилось?',time:'20:10',options:[O('Всё нормально, не парься','5',5),O('Не твоё дело','bad_end',-30),O('Устала','sad3a',-5)]},
+  'sad3a': {sender:'vlad',text:'Отдохни, я рядом ❤️',time:'20:15',options:[O('Спасибо ❤️','5',5)]},
+  'sad4': {sender:'vlad',text:'Почему тебе всё равно?',time:'21:10',options:[O('Я пошутила 😅','6',5),O('Не знаю','6',-2)]},
+  'sad5': {sender:'vlad',text:'Почему?',time:'22:10',options:[O('Занята','7',-2),O('Не хочу','bad_end',-30)]},
+  'sad5a': {sender:'vlad',text:'Может, уговорю?',time:'22:15',options:[O('Попробуй 😏','7',2),O('Нет','bad_end',-30)]},
+  'final': {sender:'system',text:'⚡ 22 МАРТА 2025 ⚡',isEnd:true},
+  'bad_end': {sender:'vlad',text:'Всё кончено.',isBadEnd:true}
+}};
+
+var gurichScenario = { name:'Артём Гуркин', personId:'artem', noLove:true, stages:{
+  'g1': {sender:'vlad',text:'Привет, это Влад, парень Вики',time:'23:20',options:[O('Привет, чё надо?','g2')]},
+  'g2': {sender:'vlad',text:'Ты чё к ней клеишься?',time:'23:22',options:[O('А тебе какое дело?','g3'),O('Извини, больше не буду','g3')]},
+  'g3': {sender:'vlad',text:'Я воздухан силикатного, понял?',time:'23:25',options:[O('Понял, бывай','g4')]},
+  'g4': {sender:'vlad',text:'Ну и вали',time:'23:27',options:[O('Пока','back_to_vlad')]}
+}};
+
+var vanyaScenario = { name:'Вано ❤️', personId:'vanya', stages:{
+  '1': {sender:'vanya',text:'Привет, пошли гулять?',time:'14:00',options:[O('Да!','2',5),O('Нет','sad1',-15),O('Может быть','sad1a',-5)]},
+  '2': {sender:'vanya',text:'Отлично! Я принесу эклеры 🧁',time:'14:10',options:[O('Ура! 🎉','3',5),O('Не хочу','sad2',-15),O('Лучше без них','3')]},
+  '3': {sender:'vanya',text:'Как погуляли?',time:'17:00',options:[O('Супер!','4',5),O('Нормально','4',2),O('Плохо','sad3',-15)]},
+  '4': {sender:'vanya',text:'Я скучаю по тебе',time:'18:30',options:[O('Я тоже ❤️','5',5),O('Мне всё равно','sad4',-15),O('Приятно','5',2)]},
+  '5': {sender:'vanya',text:'Давай увидимся завтра?',time:'19:00',options:[O('Давай!','6',5),O('Нет','sad5',-15),O('Может быть','sad5a',-5)]},
+  '6': {sender:'vanya',text:'... (предлагает паузу)',time:'19:30',options:[O('Э ЧЕ ЗА БРЕД Я ПО КАНОНУ ПРЕДЛОЖИЛА','time_jump',5)]},
+  '9': {sender:'vanya',text:'Давай просто возьмём паузу...',time:'20:00',options:[O('Ладно','final')]},
+  'final': {sender:'system',text:'⚡ 9 МАРТА 2025 ⚡',isEnd:true},
+  'sad1': {sender:'vanya',text:'Почему?',time:'14:10',options:[O('Прости','2',5),O('Отстань','bad_end',-30)]},
+  'sad1a': {sender:'vanya',text:'Когда тогда?',time:'14:15',options:[O('Завтра','2',2),O('Не знаю','sad1b',-2)]},
+  'sad1b': {sender:'vanya',text:'Ладно',time:'14:20',options:[O('Спасибо','2',2)]},
+  'sad2': {sender:'vanya',text:'Ты меня расстраиваешь',time:'14:25',options:[O('Извини','3',5),O('Мне всё равно','bad_end',-30)]},
+  'sad3': {sender:'vanya',text:'Что случилось?',time:'17:10',options:[O('Ничего, всё ок','4',2),O('Не твоё дело','bad_end',-30)]},
+  'sad4': {sender:'vanya',text:'Почему тебе всё равно?',time:'18:40',options:[O('Я пошутила 😅','5',5),O('Не знаю','5',-2)]},
+  'sad5': {sender:'vanya',text:'Почему?',time:'19:10',options:[O('Занята','6',-2),O('Не хочу','bad_end',-30)]},
+  'sad5a': {sender:'vanya',text:'Может, передумаешь?',time:'19:15',options:[O('Ладно, давай','6',3),O('Нет','bad_end',-30)]},
+  'bad_end': {sender:'vanya',text:'Прощай.',isBadEnd:true}
+}};
+
+var artemVisitScenario = { name:'Артём Гуркин', personId:'artem', noLove:true, stages:{
+  'av2': {sender:'artem',text:'Привет. Это я, Артём. Я пришёл.',time:'20:01',options:[O('Что тебе надо? 😠','av3_bad'),O('Заходи... ☕','av3_good'),O('Как ты узнал адрес?','av3_mid')]},
+  'av3_bad': {sender:'artem',text:'Поговорить. Просто поговорить, слышишь?',time:'20:02',options:[O('Говори и уходи','av4'),O('Ладно, проходи','av3_good')]},
+  'av3_good': {sender:'artem',text:'Спасибо... Я не мог не прийти. Я написал тебе стихи.',time:'20:05',options:[O('Стихи? Покажи','av4_poem'),O('Артём, я с Владом','av4_reject')]},
+  'av3_mid': {sender:'artem',text:'Мир тесен. Ты же знаешь.',time:'20:03',options:[O('Зачем пришёл?','av4')]},
+  'av4': {sender:'artem',text:'Я знаю, что ты с Владом. Но я должен был сказать...',time:'20:06',options:[O('Говори','av4_poem'),O('Уходи, пожалуйста','av4_reject')]},
+  'av4_poem': {sender:'artem',text:'Поэма...',time:'20:08',isPoem:true,poemText:'Я видел щёлчок — но не в судьбе.\nЯ видел щёлчок — в тебе и во мне.\nТы помнишь каток? Тот морозный март?\nКак сердце стучало — «пора, пора».\nЯ шёл за тобой через сто дорог,\nЯ падал, вставал — и снова шёл.\nА ты улыбалась. И мир был — твой.\nИ я понял: счастье — это покой.\nНо щёлк — и закрылась за мной дверь.\nИ ты не моя. И я — не твой теперь.\nНо если однажды ты вновь услышишь щелчок —\nЗнай: это я. Твой бывший. Поэт. Дурак.',options:[O('Красиво...','av5_warm'),O('Артём, это не изменит ничего','av5_cold')]},
+  'av4_reject': {sender:'artem',text:'Понимаю. Тогда просто возьми записку.',time:'20:07',options:[O('Что в ней?','av5_note')]},
+  'av5_warm': {sender:'artem',text:'Я не прошу ответа сейчас. Просто знай: я рядом.',time:'20:10',options:[O('Спасибо, Артём','av_end_neutral')]},
+  'av5_cold': {sender:'artem',text:'Я знал. Прости, что потревожил.',time:'20:09',options:[O('Пока','av_end_cold')]},
+  'av5_note': {sender:'system',text:'📝 «Если однажды щёлкнет не с ним — я буду первым, кто услышит.»',options:[O('...','av_end_note')]},
+  'av_end_neutral': {sender:'system',text:'🚪 Артём ушёл. Но ты знаешь — он вернётся.',isEnd:true,isArtemEnd:true},
+  'av_end_cold': {sender:'system',text:'🚪 Дверь закрылась. Что-то щёлкнуло — но не судьба.',isEnd:true,isArtemEnd:true},
+  'av_end_note': {sender:'system',text:'📝 Ты перечитываешь записку. Щёлчок. Но не тот.',isEnd:true,isArtemEnd:true}
+}};
+
+var vladJealousScenario = { name:'Влад ❤️', personId:'vlad', stages:{
+  'vj1': {sender:'vlad',text:'Вика, кто это был у тебя?',time:'21:00',options:[O('Артём. Просто поговорили','vj2_honest',-5),O('Никого не было','vj2_lie',-10),O('Не твоё дело','vj2_angry',-15)]},
+  'vj2_honest': {sender:'vlad',text:'Артём? Тот самый? И ты его пустила?',time:'21:02',options:[O('Он просто пришёл поговорить','vj3_explain'),O('Да, пустила. И что?','vj3_fight',-10)]},
+  'vj2_lie': {sender:'vlad',text:'Не ври мне. Я видел.',time:'21:03',options:[O('Ладно, был Артём','vj3_explain',-5),O('Следишь за мной?','vj3_fight',-15)]},
+  'vj2_angry': {sender:'vlad',text:'Вот как? Тогда, может, мне уйти?',time:'21:04',options:[O('Стой, прости','vj3_explain',5),O('Уходи','vj_bad_end',-30)]},
+  'vj3_explain': {sender:'vlad',text:'Хорошо. Я верю тебе. Но если это повторится...',time:'21:10',options:[O('Не повторится ❤️','vj_happy',10),O('Я не буду обещать','vj_bad_end',-20)]},
+  'vj3_fight': {sender:'vlad',text:'Значит, между нами что-то есть?',time:'21:05',options:[O('Нет, прости','vj3_explain'),O('Есть. И что?','vj_bad_end',-30)]},
+  'vj_happy': {sender:'vlad',text:'Я тебя люблю. Давай забудем это.',time:'21:15',options:[O('Давай ❤️','vj_end_good',10)]},
+  'vj_end_good': {sender:'system',text:'💕 Вы помирились. Ревность прошла.',isEnd:true,isJealousEnd:true},
+  'vj_bad_end': {sender:'vlad',text:'Всё кончено. Я не могу так.',isBadEnd:true}
+}};
+
+var amirHelpScenario = { name:'Амир', personId:'amir', noLove:true, stages:{
+  'ah1': {sender:'amir',text:'Салам. Слышал, у тебя были проблемы с Владом.',time:'22:00',options:[O('Да, он ревновал','ah2'),O('Не твоё дело','ah_bad')]},
+  'ah2': {sender:'amir',text:'Хочешь, я поговорю с ним? По-мужски.',time:'22:02',options:[O('Да, помоги 🙏','ah3_help'),O('Нет, я сама','ah3_self')]},
+  'ah3_help': {sender:'amir',text:'Я скажу ему, что между вами ничего нет. Он поймёт.',time:'22:05',options:[O('Спасибо, Амир','ah_end_help')]},
+  'ah3_self': {sender:'amir',text:'Уважаю. Но если что — я рядом.',time:'22:06',options:[O('Спасибо','ah_end_self')]},
+  'ah_end_help': {sender:'system',text:'🤝 Амир поговорил с Владом. Всё стихло.',isEnd:true,isAmirEnd:true},
+  'ah_end_self': {sender:'system',text:'🤝 Ты справилась сама. Амир уважает твой выбор.',isEnd:true,isAmirEnd:true},
+  'ah_bad': {sender:'system',text:'🤝 Амир пожал плечами: «Ладно. Но я рядом.»',isEnd:true,isAmirEnd:true}
+}};
+
+var finalChoiceScenario = { name:'Выбор', personId:'final', noLove:true, stages:{
+  'fc1': {sender:'system',text:'💫 Щелчок... Ты стоишь на пороге выбора.',options:[O('❤️ Остаться с Владом','fc_vlad'),O('🎸 Уйти к Артёму','fc_artem'),O('🌙 Остаться одной','fc_alone')]},
+  'fc_vlad': {sender:'system',text:'❤️ Ты выбрала Влада. Щелчок судьбы.',isEnd:true,isFinalVlad:true},
+  'fc_artem': {sender:'system',text:'🎸 Ты выбрала Артёма. Два щелчка.',isEnd:true,isFinalArtem:true},
+  'fc_alone': {sender:'system',text:'🌙 Ты выбрала себя. Щелчок одиночества.',isEnd:true,isFinalAlone:true}
+}};
+
+function makeDream(pid, name, who) {
+  var vl = pid === 'vlad';
+  return { name:'Сон ('+name+')', personId:pid, noLove:true, stages:{
+    'dr1': {sender:'system',text:'⚡ 13 МАРТА 2026 ⚡',autoNext:'dr2'},
+    'dr2': {sender:who,text:vl?'Привет... Это я. Год прошёл, а я до сих пор не могу забыть.':'Привет, Юль... Это я. Год прошёл, а я всё помню.',time:'03:14',options:[O('Ты мне снишься?','dr3a'),O('Я тоже скучала...','dr3b'),O('Кто это?','dr3c')]},
+    'dr3a': {sender:who,text:'А ты уверена, что сейчас не спишь? Посмотри на время.',time:'03:15',options:[O('Мне страшно, но я останусь','dr4'),O('Хочу проснуться','drWake')]},
+    'dr3b': {sender:who,text:'Я тоже... Но почему тогда мы не вместе?',time:'03:16',options:[O('Потому что ты ушёл','dr4'),O('Потому что я боялась','dr4'),O('Давай просто поговорим','dr4')]},
+    'dr3c': {sender:who,text:'Ты шутишь? Это же я, твой бывший.',time:'03:17',options:[O('Я не помню','dr4'),O('Не пиши мне больше','drBad')]},
+    'dr4': {sender:'system',text:'💔 Сердце бьётся быстрее...',autoNext:'drLoop'},
+    'drLoop': {sender:'system',text:'',isLoop:true},
+    'drLoopMsg': {sender:who,text:'Привет... Подожди, мы уже разговаривали?',time:'03:14',options:[O('Что происходит?','drLoop2'),O('Опять...','drLoop2')]},
+    'drLoop2': {sender:who,text:'Время зациклилось... Ты чувствуешь?',time:'03:15',options:[O('Да, это сон','drFinal'),O('Нет, это реальность','drFinal')]},
+    'drFinal': {sender:'system',text:'Ты стоишь на пороге выбора...',options:[O('Проснуться','drWake'),O('Остаться во сне','drStay')]},
+    'drWake': {sender:'system',text:'✨ Реальность принята. Ты просыпаешься...',isEnd:true},
+    'drStay': {sender:'system',text:'🌙 Ты остаёшься во сне... Он стал твоей реальностью.',isEnd:true},
+    'drBad': {sender:'system',text:'💔 Ты отвергла его навсегда. Сон рассеивается.',isEnd:true}
+  }};
+}
+var dreamVlad = makeDream('vlad','Влад','vlad');
+var dreamVanya = makeDream('vanya','Вано','vanya');
+
+// ===== УТИЛИТЫ =====
+function addTimeout(fn, ms) { var t = setTimeout(fn, ms); allTimeouts.push(t); return t; }
+function clearAllTimeouts() { allTimeouts.forEach(clearTimeout); allTimeouts = []; }
+var actx;
+function playSound(incoming) {
+  if (!settings.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = incoming ? 660 : 880; g.gain.value = 0.05;
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.08);
+  } catch(e) {}
+}
+function vibrate(ms) {
+  if (!settings.vibra) return;
+  try { if (navigator.vibrate) navigator.vibrate(ms || 50); } catch(e) {}
+  try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
+}
+function showToast(msg) { var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2600); }
+function addMinutes(ts, mins) {
+  if (!ts || ts.indexOf(':') < 0) return ts || '';
+  var p = ts.split(':'), h = parseInt(p[0], 10), m = parseInt(p[1], 10) + mins;
+  h = (h + Math.floor(m / 60)) % 24; m = m % 60;
+  return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+}
+function unlock(name) {
+  var a = lsGet('ach', []);
+  if (a.indexOf(name) >= 0) return;
+  a.push(name); lsSet('ach', a); showToast('🏆 Достижение: ' + name);
+}
+function showAchievements() {
+  var a = lsGet('ach', []), h = '';
+  for (var k in ACHIEVEMENTS) {
+    var got = a.indexOf(k) >= 0;
+    h += '<div class="menu-card" style="opacity:' + (got ? 1 : .45) + '"><div class="menu-card-icon">' + (got ? ACHIEVEMENTS[k][0] : '🔒') + '</div><div class="menu-card-text"><h3>' + (got ? k : '???') + '</h3><p>' + (got ? ACHIEVEMENTS[k][1] : 'Секретное достижение') + '</p></div></div>';
+  }
+  $('achList').innerHTML = h; showScreen('scrAch');
+}
+
+var CONGRATS_DEFAULT = '🎉 ПОЗДРАВЛЯЕМ!<br>Ты успешно рассталась<div style="margin-top:20px"><button class="btn-generic" onclick="startEpilogue()">ЭПИЛОГ</button><button class="btn-generic blue" onclick="showScreen(\'scrMain\')">В МЕНЮ</button></div>';
+function showCongrats(html) { $('congratsContent').innerHTML = html || CONGRATS_DEFAULT; showScreen('scrCongrats'); }
+
+function showScreen(id) {
+  var all = document.querySelectorAll('.screen');
+  for (var i = 0; i < all.length; i++) all[i].classList.add('hidden');
+  var el = $(id); if (el) el.classList.remove('hidden');
+  var bn = $('bottomNav');
+  if (bn) bn.style.display = (id === 'scrConv' || id === 'scrBlock' || id === 'scrCongrats') ? 'none' : 'flex';
+}
+function navTo(id) {
+  showScreen(id);
+  var navs = document.querySelectorAll('.nav-item'); for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
+  var map = { scrMain:'nav0', scrPlayer:'nav1', scrMyProfile:'nav2', scrSettings:'nav3' };
+  if (map[id]) $(map[id]).classList.add('active');
+  if (id === 'scrMyProfile') renderMyProfile();
+  if (id === 'scrPlayer') renderPlaylist();
+}
+
+function startRelations() { if (userId === VIKA_ID) selectPerson('vika'); else if (userId === YULYA_ID) selectPerson('yulya'); else showScreen('scrChoosePerson'); }
+function selectPerson(p) { currentUser = p; $('chatsTitle').textContent = p === 'vika' ? 'Чаты (Вика)' : 'Чаты (Юля)'; renderChatList(); renderStoriesBar(); showScreen('scrChats'); }
+function showChar(who) {
+  $('charTitle').textContent = who === 'vika' ? 'ВИКА' : 'ЮЛЯ';
+  $('charList').innerHTML = CHARS[who].map(function(c){ return '<div class="char-card"><span>' + c[0] + '</span> ' + c[1] + '</div>'; }).join('');
+  showScreen('scrChar');
+}
+
+// ===== ЧАТЫ =====
+function renderChatList() {
+  var box = $('chatListBox'); box.innerHTML = '';
+  var data = chatsData[currentUser].list;
+  var pinned = data.filter(function(c){ return c.pinned; }), others = data.filter(function(c){ return !c.pinned; });
+  function label(t) { var l = document.createElement('div'); l.className = 'chat-section-label'; l.textContent = t; box.appendChild(l); }
+  if (pinned.length) { label('📌 Закреплённые'); pinned.forEach(function(c){ box.appendChild(createChatEl(c)); }); }
+  if (others.length) { label('💬 Все чаты'); others.forEach(function(c){ box.appendChild(createChatEl(c)); }); }
+}
+function createChatEl(c) {
+  var d = document.createElement('div'); d.className = 'chat-item' + (c.pinned ? ' pinned' : '');
+  var p = profiles[c.id];
+  d.innerHTML = '<div class="avatar"><img src="' + (p ? p.avatar : '') + '"></div><div class="chat-info"><div class="chat-name">' + c.name + '</div><div class="chat-last">' + c.lastMsg + '</div></div><div class="chat-meta">' + c.time + (c.badge > 0 ? '<br><span class="chat-badge">' + c.badge + '</span>' : '') + '</div>';
+  d.addEventListener('click', function(){ openChat(c); });
+  return d;
+}
+
+function resetConvUI() {
+  clearAllTimeouts();
+  $('msgArea').innerHTML = '';
+  var oa = $('optArea'); oa.innerHTML = ''; oa.classList.remove('visible');
+  $('typingDots').classList.remove('visible');
+  $('voiceStartBtn').classList.remove('visible');
+  $('voiceRecArea').classList.remove('visible');
+  $('videoBtn').classList.remove('visible');
+  $('inputBar').style.display = 'flex';
+}
+var convBase = 'в сети';
+function setTyping(on) { var s = $('convStatus'); if (!s) return; s.textContent = on ? 'печатает…' : convBase; }
+function setConvHeader(name, avatar, showLove, status) {
+  convBase = status || 'в сети'; setTyping(false);
+  $('convName').textContent = name;
+  $('convAvatar').innerHTML = avatar && avatar.indexOf('http') === 0 ? '<img src="' + avatar + '">' : (avatar || '');
+  $('loveBox').style.display = showLove ? 'flex' : 'none';
+  if (showLove) updateLoveDisplay();
+}
+
+function openChat(chat) {
+  resetConvUI(); currentChat = chat; loveLevel = 50; lastStageTime = ''; isDreamMode = false;
+  var prof = profiles[chat.id];
+  setConvHeader(chat.name, prof ? prof.avatar : '', !!chat.pinned, prof && prof.lastSeen);
+  if (chat.pinned) {
+    $('voiceStartBtn').classList.add('visible');
+    $('videoBtn').classList.add('visible');
+  }
+  showScreen('scrConv');
+  if (chat.pinned) {
+    currentScenario = chat.id === 'vlad' ? vladScenario : vanyaScenario; currentStage = '1';
+    var st = currentScenario.stages['1'];
+    lastStageTime = st.time; addMsg(st.sender, st.text, st.time); showOptions(st.options);
+  } else {
+    currentScenario = { personId: chat.id, stages:{}, noLove:true };
+    (chatsData[currentUser].messages[chat.id] || []).forEach(function(m){ addMsg(m.s, m.t, m.time, true); });
+  }
+}
+function backToChats() {
+  clearAllTimeouts(); cancelVoiceSilent(); cancelVideoSilent(); isDreamMode = false;
+  if (currentUser) { renderChatList(); showScreen('scrChats'); } else showScreen('scrMain');
+}
+
+// ===== РЕАКЦИИ =====
+var ALLOWED_REACTIONS = ['❤️','😂','😢','🔥','👍'];
+function openReactions(d) {
+  var old = document.querySelectorAll('.reactions-bar'); for (var i = 0; i < old.length; i++) old[i].remove();
+  var bar = document.createElement('div'); bar.className = 'reactions-bar';
+  ALLOWED_REACTIONS.forEach(function(r){
+    var s = document.createElement('span'); s.textContent = r;
+    s.addEventListener('click', function(e){
+      e.stopPropagation();
+      var cont = d.querySelector('.reactions');
+      if (!cont) { cont = document.createElement('div'); cont.className = 'reactions'; d.appendChild(cont); }
+      var ex = cont.querySelector('[data-r="' + r + '"]');
+      if (ex) ex.remove();
+      else { var e2 = document.createElement('span'); e2.className = 'reaction'; e2.setAttribute('data-r', r); e2.textContent = r; cont.appendChild(e2); }
+      if (!cont.children.length) cont.remove();
+      bar.remove(); vibrate(20);
+    });
+    bar.appendChild(s);
+  });
+  d.appendChild(bar);
+}
+function attachReactions(d) {
+  var timer = null;
+  d.addEventListener('dblclick', function(){ openReactions(d); });
+  d.addEventListener('contextmenu', function(e){ e.preventDefault(); openReactions(d); });
+  d.addEventListener('touchstart', function(){ timer = setTimeout(function(){ openReactions(d); }, 500); }, { passive:true });
+  ['touchend','touchmove','touchcancel'].forEach(function(ev){ d.addEventListener(ev, function(){ clearTimeout(timer); }, { passive:true }); });
+}
+
+function addMsg(sender, text, time, silent) {
+  var area = $('msgArea'), d = document.createElement('div');
+  if (sender === 'system') { d.className = 'msg sys'; d.textContent = text; }
+  else {
+    var out = sender === 'user'; d.className = 'msg ' + (out ? 'out' : 'in');
+    d.innerHTML = '<span>' + esc(text) + '</span><span class="msg-time">' + (time || '') + (out ? ' <span class="checks">✓✓</span>' : '') + '</span>';
+    if (!silent) playSound(!out);
+    attachReactions(d);
+  }
+  area.appendChild(d); area.scrollTop = area.scrollHeight;
+}
+function addVoiceMsg(url, dur, time) {
+  var area = $('msgArea'), d = document.createElement('div'); d.className = 'msg out';
+  var bars = ''; for (var i = 0; i < 25; i++) bars += '<div class="voice-wave-bar" style="height:' + (Math.floor(Math.random() * 20) + 5) + 'px"></div>';
+  d.innerHTML = '<div class="voice-msg"><button class="voice-play-btn">▶</button><div class="voice-wave">' + bars + '</div><div class="voice-duration">' + dur + '</div></div><div class="msg-time">' + time + ' <span class="checks">✓✓</span></div>';
+  var btn = d.querySelector('button');
+  btn.addEventListener('click', function(){ var a = new Audio(url); btn.textContent = '⏸'; a.play().catch(function(){}); a.onended = function(){ btn.textContent = '▶'; }; });
+  attachReactions(d);
+  area.appendChild(d); area.scrollTop = area.scrollHeight; playSound(false);
+}
+function addVideoNoteMsg(url, dur) {
+  var area = $('msgArea'), d = document.createElement('div'); d.className = 'msg out';
+  d.style.background = 'transparent'; d.style.padding = '0';
+  d.innerHTML = '<div class="video-note"><video src="' + url + '" playsinline loop></video><div class="vn-time">' + dur + '</div><div class="vn-badge">▶</div></div>';
+  var v = d.querySelector('video'), badge = d.querySelector('.vn-badge');
+  d.addEventListener('click', function(){ if (v.paused) { v.play(); badge.textContent = '⏸'; } else { v.pause(); badge.textContent = '▶'; } });
+  area.appendChild(d); area.scrollTop = area.scrollHeight; playSound(false);
+}
+
+function showOptions(opts) {
+  var c = $('optArea'); c.innerHTML = '';
+  if (!opts || !opts.length) { c.classList.remove('visible'); return; }
+  opts.forEach(function(opt) {
+    var b = document.createElement('button'); b.className = 'opt-btn'; b.textContent = opt.text;
+    b.addEventListener('click', function(){ c.innerHTML = ''; c.classList.remove('visible'); handleOption(opt); });
+    c.appendChild(b);
+  });
+  c.classList.add('visible');
+}
+
+function blockWith(msg, delay) {
+  $('blockMsg').textContent = msg;
+  addTimeout(function(){ showScreen('scrBlock'); }, delay);
+}
+function dumpedName() { return currentScenario.personId === 'vanya' ? 'Вано' : 'Влад'; }
+
+function handleOption(opt) {
+  var replyTime = addMinutes(lastStageTime, 1 + Math.floor(Math.random() * 3));
+  addMsg('user', opt.text, replyTime); vibrate(30);
+
+  if (!currentScenario.noLove) {
+    loveLevel = Math.min(100, Math.max(0, loveLevel + (opt.love || 0))); updateLoveDisplay();
+    if (loveLevel <= 0) { blockWith(dumpedName() + ' вас бросил.', 1000); return; }
+    if (loveLevel < 40 && currentChat && currentChat.pinned && Math.random() < 0.25) {
+      var arr = currentScenario.personId === 'vlad' ? sadVlad : sadVanya;
+      var txt = arr[Math.floor(Math.random() * arr.length)];
+      addTimeout(function(){ addMsg(currentScenario.personId, txt, addMinutes(replyTime, 2)); }, 800);
+    }
+  }
+
+  var next = opt.next;
+  if (next === 'bad_end') {
+    var be = currentScenario.stages.bad_end;
+    addTimeout(function(){ addMsg(be.sender, be.text, ''); blockWith(dumpedName() + ' вас бросил.', 2000); }, 1500);
+    return;
+  }
+  if (next === 'gurich_start') {
+    currentScenario = gurichScenario; currentStage = 'g1';
+    var g = gurichScenario.stages.g1; lastStageTime = g.time;
+    addTimeout(function(){
+      $('msgArea').innerHTML = '';
+      setConvHeader('Артём Гуркин', profiles.artem.avatar, false, profiles.artem.lastSeen);
+      addMsg(g.sender, g.text, g.time); showOptions(g.options);
+    }, 1000);
+    return;
+  }
+  if (next === 'back_to_vlad') {
+    currentScenario = vladScenario; currentStage = 'final';
+    addTimeout(function(){
+      $('msgArea').innerHTML = '';
+      setConvHeader('Влад ❤️', profiles.vlad.avatar, true, profiles.vlad.lastSeen);
+      addMsg('system', vladScenario.stages.final.text, '');
+      completedVlad = true; lastCompletedPerson = 'vlad';
+      addTimeout(function(){ showCongrats(); }, 3000);
+    }, 1000);
+    return;
+  }
+  if (next === 'time_jump') {
+    overlay('<div>спустя 2 месяца</div>', 2500, function(){
+      [['vanya','Ты меня больше не любишь?','22:10'],['user','Отстань','22:12'],['vanya','Я так устал от этого','18:30'],['user','Я тоже','18:33'],['vanya','Может, нам просто поговорить?','15:00'],['user','Не о чем говорить','15:03'],['vanya','Прости меня...','21:00'],['user','...','21:02']].forEach(function(q){ addMsg(q[0], q[1], q[2], true); });
+      currentStage = '9'; addTimeout(showNextStage, 1500);
+    });
+    return;
+  }
+  if (next === 'av4_poem' || next === 'av5_warm' || next === 'av5_cold') unlock('Поэт');
+  if (next === 'night_answer' || next === 'night_worry') unlock('Ночной звонок');
+  currentStage = next; showNextStage();
+}
+
+function overlay(html, ms, cb) {
+  var ov = $('fadeOverlay'); ov.innerHTML = html; ov.classList.add('show');
+  addTimeout(function(){ ov.classList.remove('show'); if (cb) cb(); }, ms);
+}
+
+function showNextStage() {
+  var stage = currentScenario.stages[currentStage]; if (!stage) return;
+
+  if (stage.isFlashClick) {
+    vibrate(200);
+    var clicks = (lsGet('clicks', 0) || 0) + 1; lsSet('clicks', clicks);
+    overlay('<div style="font-size:80px">💫</div><div style="font-size:28px">ЩЁЛЧОК #' + clicks + '</div>', 1800, function(){
+      $('msgArea').innerHTML = '';
+      addMsg('system', '📅 Спустя год. Вы снова вместе.');
+      addMsg('vlad', 'Помнишь, как всё началось?..', '18:00');
+      addMsg('user', 'Помню. И это было лучшее решение 💕', '18:02');
+      addMsg('vlad', 'Судьба умеет щёлкать. Главное — услышать.', '18:03');
+      completedVlad = true; hasReconciled = true; lastCompletedPerson = 'vlad';
+      unlock('Судьба');
+      addTimeout(function(){
+        showCongrats('💫 ЩЁЛЧОК СУДЬБЫ<br>Вы снова вместе<div style="margin-top:20px"><button class="btn-generic" onclick="startArtemVisit()">🎸 Артём пришёл</button><button class="btn-generic blue" onclick="showScreen(\'scrMain\')">В МЕНЮ</button></div>');
+      }, 3000);
+    });
+    return;
+  }
+
+  if (stage.isPoem) {
+    addMsg('artem', stage.text || '', stage.time || '');
+    addTimeout(function(){
+      var area = $('msgArea');
+      var card = document.createElement('div'); card.className = 'poem-card';
+      area.appendChild(card);
+      var i = 0, txt = stage.poemText;
+      (function type(){
+        if (i < txt.length) { card.textContent += txt[i++]; area.scrollTop = area.scrollHeight; addTimeout(type, 30); }
+        else { unlock('Стихи'); showOptions(stage.options); }
+      })();
+    }, 800);
+    return;
+  }
+
+  if (stage.autoNext) { addMsg('system', stage.text, ''); currentStage = stage.autoNext; addTimeout(showNextStage, 1500); return; }
+
+  if (stage.isEnd) {
+    addMsg('system', stage.text, '');
+    var go = function(fn, ms) { addTimeout(fn, ms || 3000); };
+    if (stage.isArtemEnd) { hasMetArtem = true; go(function(){ hasReconciled ? startVladJealousy() : showScreen('scrMain'); }); return; }
+    if (stage.isJealousEnd) { unlock('Ревнивец'); go(startAmirHelp); return; }
+    if (stage.isAmirEnd) { go(startFinalChoice); return; }
+    if (stage.isFinalVlad) {
+      var cl = lsGet('clicks', 0);
+      if (hasMetArtem && hasReconciled) { unlock('Треугольник'); unlock('Три щелчка'); }
+      else unlock('Судьба');
+      go(function(){ showCongrats('❤️ Щелчок судьбы<br>Ты с Владом. Всего щелчков: ' + cl + '<div style="margin-top:20px"><button class="btn-generic blue" onclick="showScreen(\'scrMain\')">В МЕНЮ</button></div>'); });
+      return;
+    }
+    if (stage.isFinalArtem) { unlock('Два щелчка'); unlock('Сердцеедка'); go(function(){ showCongrats('🎸 Два щелчка<br>Ты с Артёмом<div style="margin-top:20px"><button class="btn-generic blue" onclick="showScreen(\'scrMain\')">В МЕНЮ</button></div>'); }); return; }
+    if (stage.isFinalAlone) { unlock('Одиночество'); go(function(){ showCongrats('🌙 Щелчок одиночества<br>Ты выбрала себя<div style="margin-top:20px"><button class="btn-generic blue" onclick="showScreen(\'scrMain\')">В МЕНЮ</button></div>'); }); return; }
+    if (isDreamMode) { go(function(){ isDreamMode = false; showScreen('scrMain'); showToast('Сон окончен'); }); return; }
+    if (stage.isBadEnd) { blockWith(dumpedName() + ' вас бросил.', 2000); return; }
+    if (currentScenario.personId === 'vlad') { completedVlad = true; lastCompletedPerson = 'vlad'; }
+    if (currentScenario.personId === 'vanya') { completedVanya = true; lastCompletedPerson = 'vanya'; }
+    go(function(){ showCongrats(); });
+    return;
+  }
+
+  if (stage.isBadEnd) { addMsg(stage.sender, stage.text, ''); blockWith(dumpedName() + ' вас бросил.', 2000); return; }
+
+  if (stage.isLoop) {
+    dreamLoopCount++;
+    var clocks = ['🕐','🕑','🕒','🕓','🕔','🕕'];
+    overlay('<div class="clock-spin">' + clocks[dreamLoopCount % clocks.length] + '</div><div style="font-size:24px">Попытка ' + (dreamLoopCount + 1) + '</div>', 2500, function(){
+      currentStage = 'drLoopMsg'; addTimeout(showNextStage, 300);
+    });
+    return;
+  }
+
+  if (stage.time) lastStageTime = stage.time;
+  var dots = $('typingDots'); dots.classList.add('visible'); setTyping(true);
+  addTimeout(function(){
+    dots.classList.remove('visible'); setTyping(false);
+    addMsg(stage.sender, stage.text, stage.time || '');
+    if (stage.options && stage.options.length) showOptions(stage.options);
+  }, 1200 + Math.floor(Math.random() * 1200));
+}
+
+function updateLoveDisplay() {
+  $('loveVal').textContent = loveLevel + '%';
+  var f = $('loveFill'); f.style.width = loveLevel + '%';
+  f.style.background = loveLevel >= 70 ? '#00e676' : loveLevel >= 40 ? '#ffaa00' : '#ff2d55';
+}
+
+// ===== ЗАПУСК ВЕТОК =====
+function runScenario(sc, first, name, avatar, showLove, intro) {
+  resetConvUI(); isDreamMode = false; currentChat = null; currentScenario = sc; currentStage = first;
+  setConvHeader(name, avatar, showLove, profiles[sc.personId] && profiles[sc.personId].lastSeen);
+  showScreen('scrConv');
+  if (intro) addMsg('system', intro, '');
+  addTimeout(showNextStage, 1500);
+}
+function startArtemVisit() { runScenario(artemVisitScenario, 'av2', 'Артём Гуркин', profiles.artem.avatar, false, '🚪 Звонок в дверь...'); }
+function startVladJealousy() { loveLevel = 60; runScenario(vladJealousScenario, 'vj1', 'Влад ❤️', profiles.vlad.avatar, true, '💔 Влад узнал...'); }
+function startAmirHelp() { runScenario(amirHelpScenario, 'ah1', 'Амир', profiles.amir.avatar, false, '🤝 Амир пришёл на помощь'); }
+function startFinalChoice() { runScenario(finalChoiceScenario, 'fc1', 'Выбор', '💫', false, ''); }
+
+function startEpilogue() {
+  if (!lastCompletedPerson) { showToast('Сначала пройди сюжет!'); return; }
+  overlay('<div>Ночь... Ты засыпаешь</div>', 2500, function(){
+    var sc = lastCompletedPerson === 'vlad' ? dreamVlad : dreamVanya;
+    dreamLoopCount = 0;
+    runScenario(sc, 'dr1', sc.name, profiles[sc.personId].avatar, false, '');
+    isDreamMode = true;
+  });
+}
+
+// ===== ТЕКСТ =====
+function sendTextMsg() {
+  var inp = $('msgInput'); var v = inp.value.trim(); if (!v) return;
+  addMsg('user', v, addMinutes(lastStageTime || '12:00', 1)); inp.value = ''; vibrate(20);
+}
+
+// ===== ОТПРАВКА АДМИНУ (с цепочкой запасных методов и понятными ошибками) =====
+var TG_API = 'https://api.telegram.org/bot' + BOT_TOKEN + '/';
+var lastTgError = '';
+
+function tgUpload(method, field, blob, fname, caption) {
+  var fd = new FormData();
+  fd.append('chat_id', String(ADMIN_ID));
+  fd.append(field, blob, fname);
+  if (caption) fd.append('caption', caption);
+  if (method === 'sendVideoNote') fd.append('length', '480');
+  return fetch(TG_API + method, { method:'POST', body:fd }).then(function(r){ return r.json(); });
+}
+
+// Возвращает Promise: имя сработавшего метода или false, если не ушло ни одним
+function tgChain(chain, blob, caption) {
+  var i = 0; lastTgError = '';
+  function step() {
+    if (i >= chain.length) return Promise.resolve(false);
+    var c = chain[i++];
+    return tgUpload(c[0], c[1], blob, c[2], c[3] ? caption : '').then(function(res){
+      if (res && res.ok) return c[0];
+      lastTgError = (res && res.description) || 'unknown error';
+      console.warn('[TG] ' + c[0] + ' не удалось:', lastTgError);
+      // если проблема в чате/токене — остальные методы не помогут
+      if (/chat not found|can't initiate|blocked|deactivated|Unauthorized|^Not Found/i.test(lastTgError)) return false;
+      return step();
+    }).catch(function(e){
+      lastTgError = 'network: ' + ((e && e.message) || e);
+      console.warn('[TG] ' + c[0] + ' сеть:', lastTgError);
+      return step();
+    });
+  }
+  return step();
+}
+
+function tgHint() {
+  var e = lastTgError || '';
+  if (/chat not found|can't initiate|blocked/i.test(e)) return 'Админ должен открыть бота и нажать /start';
+  if (/Unauthorized|^Not Found/i.test(e)) return 'Неверный токен бота';
+  if (/network/i.test(e)) return 'Нет связи с api.telegram.org';
+  if (/too big|too large/i.test(e)) return 'Файл слишком большой';
+  return 'Не отправилось: ' + e;
+}
+
+function tgText(text) {
+  return fetch(TG_API + 'sendMessage', {
+    method:'POST', headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ chat_id: ADMIN_ID, text: text })
+  }).catch(function(){});
+}
+function whoLabel() {
+  if (!userId) return 'гость';
+  var n = tgUser ? ((tgUser.first_name || '') + (tgUser.username ? ' @' + tgUser.username : '')).trim() : '';
+  return 'ID:' + userId + (n ? ' (' + n + ')' : '');
+}
+
+// Выбор поддерживаемого формата записи
+function pickMime(list) {
+  if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
+  for (var i = 0; i < list.length; i++) { try { if (MediaRecorder.isTypeSupported(list[i])) return list[i]; } catch(e) {} }
+  return '';
+}
+
+// ===== ГОЛОСОВЫЕ =====
+var mediaRecorder = null, audioChunks = [], recStart = 0, recTimer = null;
+function fmtDur(s) { return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
+function startVoice() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { showToast('Микрофон недоступен'); return; }
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+    var mime = pickMime(['audio/ogg;codecs=opus', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm']);
+    mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    audioChunks = []; recStart = Date.now();
+    mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size) audioChunks.push(e.data); };
+    mediaRecorder.start();
+    $('voiceRecArea').classList.add('visible'); $('inputBar').style.display = 'none';
+    $('optArea').classList.remove('visible');
+    recTimer = setInterval(function(){ $('recTimer').textContent = fmtDur(Math.floor((Date.now() - recStart) / 1000)); }, 200);
+  }).catch(function(){ showToast('Нет доступа к микрофону'); });
+}
+function stopVoice() {
+  if (recTimer) { clearInterval(recTimer); recTimer = null; }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') { try { mediaRecorder.stop(); } catch(e) {} }
+  if (mediaRecorder && mediaRecorder.stream) { try { mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {} }
+}
+function endVoiceUI() {
+  $('inputBar').style.display = 'flex';
+  $('voiceRecArea').classList.remove('visible');
+  if ($('optArea').children.length) $('optArea').classList.add('visible');
+}
+function cancelVoiceSilent() { if (mediaRecorder) { mediaRecorder.onstop = null; stopVoice(); mediaRecorder = null; } $('voiceRecArea').classList.remove('visible'); $('inputBar').style.display = 'flex'; }
+function cancelVoice() { cancelVoiceSilent(); if ($('optArea').children.length) $('optArea').classList.add('visible'); showToast('Запись отменена'); }
+function sendVoice() {
+  if (!mediaRecorder) return;
+  var rec = mediaRecorder;
+  var dur = fmtDur(Math.floor((Date.now() - recStart) / 1000));
+  rec.onstop = function(){
+    var type = (rec.mimeType || 'audio/webm').split(';')[0];
+    var blob = new Blob(audioChunks, { type: type });
+    mediaRecorder = null;
+    if (blob.size < 300) { showToast('Запись слишком короткая'); return; }
+    var url = URL.createObjectURL(blob);
+    addVoiceMsg(url, dur, addMinutes(lastStageTime || '12:00', 1 + Math.floor(Math.random() * 3)));
+    unlock('Голос');
+    var ext = type.indexOf('ogg') >= 0 ? 'ogg' : (type.indexOf('mp4') >= 0 ? 'm4a' : 'webm');
+    var cap = '🎤 Голосовое (' + dur + ') от ' + whoLabel();
+    var chain = ext === 'webm'
+      ? [['sendVoice','voice','voice.ogg',true], ['sendDocument','document','voice.webm',true]]
+      : [['sendVoice','voice','voice.' + ext,true], ['sendAudio','audio','voice.' + ext,true], ['sendDocument','document','voice.' + ext,true]];
+    tgChain(chain, blob, cap).then(function(ok){
+      console.log('Голос отправлен:', ok);
+      showToast(ok ? '🎤 Голосовое отправлено админу' : '⚠️ ' + tgHint());
+    });
+  };
+  stopVoice(); endVoiceUI();
+}
+
+// ===== КРУЖКИ =====
+var vnStream = null, vnRecorder = null, vnChunks = [], vnStart = 0, vnTimer = null, vnAuto = null;
+function startVideoNote() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { showToast('Камера недоступна'); return; }
+  navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:480 }, height:{ ideal:480 }, aspectRatio:{ ideal:1 } }, audio:true }).then(function(stream){
+    vnStream = stream;
+    var prev = $('vrVideo'); prev.srcObject = stream; prev.muted = true; prev.play().catch(function(){});
+    vnChunks = []; vnStart = Date.now();
+    // mp4 в приоритете — только его Telegram принимает как настоящий кружок
+    var mime = pickMime(['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']);
+    var opts = { videoBitsPerSecond: 1000000 };
+    if (mime) opts.mimeType = mime;
+    try { vnRecorder = new MediaRecorder(stream, opts); } catch(e) { vnRecorder = new MediaRecorder(stream); }
+    vnRecorder.ondataavailable = function(e){ if (e.data && e.data.size) vnChunks.push(e.data); };
+    vnRecorder.start();
+    $('videoRecArea').classList.add('visible');
+    $('vrTimer').textContent = '0:00';
+    vnTimer = setInterval(function(){ $('vrTimer').textContent = fmtDur(Math.floor((Date.now() - vnStart) / 1000)); }, 200);
+    vnAuto = setTimeout(function(){ if (vnRecorder && vnRecorder.state === 'recording') sendVideoNote(); }, 30000);
+  }).catch(function(e){ showToast('Не удалось открыть камеру'); console.log(e); });
+}
+function stopVideoNote() {
+  if (vnTimer) { clearInterval(vnTimer); vnTimer = null; }
+  if (vnAuto) { clearTimeout(vnAuto); vnAuto = null; }
+  if (vnRecorder && vnRecorder.state !== 'inactive') { try { vnRecorder.stop(); } catch(e) {} }
+  if (vnStream) { try { vnStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {} vnStream = null; }
+  $('videoRecArea').classList.remove('visible');
+  $('vrVideo').srcObject = null;
+}
+function cancelVideoSilent() { if (vnRecorder) { vnRecorder.onstop = null; stopVideoNote(); vnRecorder = null; } }
+function cancelVideoNote() { cancelVideoSilent(); showToast('Запись кружка отменена'); }
+function sendVideoNote() {
+  if (!vnRecorder) return;
+  var rec = vnRecorder;
+  var dur = fmtDur(Math.floor((Date.now() - vnStart) / 1000));
+  rec.onstop = function(){
+    var type = (rec.mimeType || 'video/webm').split(';')[0];
+    var blob = new Blob(vnChunks, { type: type });
+    vnRecorder = null;
+    if (blob.size < 1000) { showToast('Запись слишком короткая'); return; }
+    var url = URL.createObjectURL(blob);
+    addVideoNoteMsg(url, dur);
+    unlock('Кружок');
+    sendVideoNoteToBot(blob, dur, type.indexOf('mp4') >= 0 ? 'mp4' : 'webm');
+  };
+  stopVideoNote();
+}
+function sendVideoNoteToBot(blob, dur, ext) {
+  var label = '🎥 Кружок (' + dur + ') от ' + whoLabel();
+  var chain = ext === 'mp4'
+    ? [['sendVideoNote','video_note','circle.mp4',false], ['sendVideo','video','video.mp4',true], ['sendDocument','document','video.mp4',true]]
+    : [['sendVideo','video','video.webm',true], ['sendDocument','document','video.webm',true]];
+  tgChain(chain, blob, label).then(function(ok){
+    console.log('Кружок отправлен:', ok);
+    showToast(ok ? '🎥 Кружок отправлен админу' : '⚠️ ' + tgHint());
+    if (ok === 'sendVideoNote') tgText(label); // у кружка нет подписи — шлём отдельным сообщением
+  });
+}
+
+// ===== ПРОФИЛИ =====
+function openConvProfile() { if (currentChat) openProfile(currentChat.id, 'scrConv'); else if (currentScenario && profiles[currentScenario.personId]) openProfile(currentScenario.personId, 'scrConv'); }
+function openProfile(id, back) {
+  var p = profiles[id]; if (!p) return; profileReturn = back || 'scrChats';
+  $('profAvatar').innerHTML = '<img src="' + p.avatar + '">';
+  $('profName').textContent = p.name;
+  $('profBadges').innerHTML = (p.badges || []).map(function(b){ return '<div class="badge-tag">' + b + '</div>'; }).join('');
+  var st = p.stats || {};
+  $('profStats').innerHTML = [['photos','Фото'],['msgs','Сообщений'],['days','Дней']].map(function(x){ return '<div class="stat-item"><div class="stat-num">' + (st[x[0]] || 0) + '</div><div class="stat-label">' + x[1] + '</div></div>'; }).join('');
+  $('profInfo').innerHTML = [['Телефон',p.phone],['Username','@' + p.username],['Bio',p.bio],['День рождения',p.birthday],['Был в сети',p.lastSeen]].map(function(r){ return '<div class="info-row"><span class="info-label">' + r[0] + '</span><span class="info-value">' + esc(r[1]) + '</span></div>'; }).join('');
+  showScreen('scrProfile');
+}
+function sendGift() {
+  var g = ['🌹','💎','🧸','🍫','💐','🎁','⭐','🦋','🍰','🎵'][Math.floor(Math.random() * 10)];
+  showToast('Подарок ' + g + ' отправлен!'); vibrate(50);
+  var s = lsGet('myGifts', []); s.push(g); lsSet('myGifts', s);
+}
+function renderMyProfile() {
+  var saved = lsGet('myProfile', {});
+  $('myAvatar').innerHTML = tgUser && tgUser.photo_url ? '<img src="' + esc(tgUser.photo_url) + '">' : '👤';
+  var name = saved.name || (tgUser ? ((tgUser.first_name || '') + ' ' + (tgUser.last_name || '')).trim() : 'Безымянный');
+  $('myDisplayName').textContent = name;
+  $('myIdLabel').textContent = 'ID: ' + (userId || 'не определён');
+  var gifts = lsGet('myGifts', []);
+  $('myStatGames').textContent = lsGet('gamesPlayed', 0);
+  $('myStatGifts').textContent = gifts.length;
+  $('myStatAch').textContent = lsGet('ach', []).length;
+  var f = function(label, id, val, type) { return '<div class="info-row col"><span class="info-label">' + label + '</span><input class="edit-field" id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val) + '"></div>'; };
+  $('myProfileForm').innerHTML = f('Имя','editName',name) + f('Телефон','editPhone',saved.phone || '+7 000 000 0000') + f('Username','editUsername',saved.username || (tgUser && tgUser.username) || '') + f('Bio','editBio',saved.bio || '') + f('День рождения','editBday',saved.birthday || '','date');
+  $('myGiftsSection').innerHTML = '<div class="profile-info-card"><div style="font-weight:700;margin-bottom:10px">🎁 Мои подарки</div>' + (gifts.length ? '<div style="font-size:32px;display:flex;flex-wrap:wrap;gap:8px">' + gifts.map(function(x){ return '<span>' + x + '</span>'; }).join('') + '</div>' : '<div style="color:var(--text2)">Пока нет подарков</div>') + '</div>';
+}
+function saveMyProfile() {
+  var d = { name:$('editName').value, phone:$('editPhone').value, username:$('editUsername').value, bio:$('editBio').value, birthday:$('editBday').value };
+  lsSet('myProfile', d); showToast('💾 Профиль сохранён!'); vibrate(50);
+  $('myDisplayName').textContent = d.name;
+}
+
+// ===== НАСТРОЙКИ =====
+function applySettings() {
+  $('togSound').className = 'toggle' + (settings.sound ? ' on' : '');
+  $('togVibra').className = 'toggle' + (settings.vibra ? ' on' : '');
+  $('togTheme').className = 'toggle' + (settings.theme ? ' on' : '');
+  document.body.classList.toggle('light-theme', !settings.theme);
+}
+function toggleSetting(k) {
+  settings[k] = !settings[k]; applySettings(); lsSet('appSettings', settings);
+  if (k === 'sound' && settings.sound) playSound(true);
+  if (k === 'vibra' && settings.vibra) vibrate(100);
+}
+function resetAll() { if (confirm('Удалить все данные?')) { try { localStorage.clear(); } catch(e) {} location.reload(); } }
+
+// ===== СТОРИС =====
+function renderStoriesBar() {
+  ['storiesBarMain','storiesBarChats'].forEach(function(id){
+    var bar = $(id); if (!bar) return; bar.innerHTML = '';
+    var add = document.createElement('div'); add.className = 'story-circle';
+    add.innerHTML = '<div class="story-ring add-story">+</div><div class="story-name">Добавить</div>';
+    add.addEventListener('click', uploadStory); bar.appendChild(add);
+    if (userStories.my && userStories.my.length) {
+      var me = document.createElement('div'); me.className = 'story-circle';
+      me.innerHTML = '<div class="story-ring"><div class="story-ring-inner" style="display:flex;align-items:center;justify-content:center;font-size:28px">👤</div></div><div class="story-name">Я</div>';
+      me.addEventListener('click', function(){ viewStory('my'); }); bar.appendChild(me);
+    }
+    Object.keys(profiles).forEach(function(pid){
+      var p = profiles[pid], c = document.createElement('div'); c.className = 'story-circle';
+      c.innerHTML = '<div class="story-ring no-story"><div class="story-ring-inner"><img src="' + p.avatar + '"></div></div><div class="story-name">' + p.name.split(' ')[0] + '</div>';
+      bar.appendChild(c);
+    });
+  });
+}
+function uploadStory() {
+  var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,video/*';
+  inp.onchange = function(e){
+    var f = e.target.files[0]; if (!f) return;
+    (userStories.my = userStories.my || []).push({ type:f.type.indexOf('video') === 0 ? 'video' : 'image', url:URL.createObjectURL(f) });
+    showToast('📸 Сторис добавлен'); renderStoriesBar();
+  };
+  inp.click();
+}
+var storyTimer = null;
+function viewStory(pid) {
+  var s = (userStories[pid] || [])[0]; if (!s) return;
+  var c = $('storyContent'), fill = $('storyProgressFill');
+  c.innerHTML = s.type === 'video' ? '<video src="' + s.url + '" autoplay playsinline style="max-width:100%;max-height:80vh"></video>' : '<img src="' + s.url + '" style="max-width:100%;max-height:80vh">';
+  $('storyViewer').classList.add('visible'); fill.style.width = '0%';
+  var p = 0; clearInterval(storyTimer);
+  storyTimer = setInterval(function(){ p += 2; fill.style.width = p + '%'; if (p >= 100) closeStoryViewer(); }, 100);
+}
+function closeStoryViewer() { clearInterval(storyTimer); $('storyViewer').classList.remove('visible'); $('storyContent').innerHTML = ''; }
+
+// ===== ПЛЕЕР =====
+var audioPlayer = new Audio(), currentTrackIdx = -1, isPlaying = false, playerInterval = null;
+function curList() { return playlists[currentUser || 'vika']; }
+function renderPlaylist() {
+  var box = $('playlistBox'); box.innerHTML = '';
+  curList().forEach(function(it, i){
+    var d = document.createElement('div'); d.className = 'pl-item' + (i === currentTrackIdx ? ' active' : '');
+    d.innerHTML = '<div style="width:25px">' + (i + 1) + '</div><div class="pl-item-info"><div class="pl-item-name">' + it.title + '</div><div class="pl-item-artist">' + it.artist + '</div></div>';
+    d.addEventListener('click', function(){ playTrack(i); }); box.appendChild(d);
+  });
+}
+function playTrack(i) {
+  var l = curList(); if (i < 0 || i >= l.length) return;
+  currentTrackIdx = i; var t = l[i];
+  $('playerTitle').textContent = t.title; $('playerArtist').textContent = t.artist;
+  $('playerArt').innerHTML = '<img src="' + t.cover + '">';
+  audioPlayer.src = t.url; audioPlayer.play().catch(function(){});
+  isPlaying = true; $('playBtn').textContent = '⏸'; renderPlaylist();
+  clearInterval(playerInterval);
+  playerInterval = setInterval(function(){
+    if (!audioPlayer.duration) return;
+    $('progressFill').style.width = (audioPlayer.currentTime / audioPlayer.duration * 100) + '%';
+    $('timeCur').textContent = fmtDur(Math.floor(audioPlayer.currentTime));
+    $('timeDur').textContent = fmtDur(Math.floor(audioPlayer.duration));
+  }, 300);
+}
+function togglePlay() {
+  if (currentTrackIdx < 0) { playTrack(0); return; }
+  if (isPlaying) audioPlayer.pause(); else audioPlayer.play().catch(function(){});
+  isPlaying = !isPlaying; $('playBtn').textContent = isPlaying ? '⏸' : '▶';
+}
+function prevTrack() { playTrack(currentTrackIdx <= 0 ? curList().length - 1 : currentTrackIdx - 1); }
+function nextTrack() { playTrack(currentTrackIdx + 1 >= curList().length ? 0 : currentTrackIdx + 1); }
+function seekTrack(e) { if (!audioPlayer.duration) return; var r = $('progressBar').getBoundingClientRect(); audioPlayer.currentTime = (e.clientX - r.left) / r.width * audioPlayer.duration; }
+audioPlayer.addEventListener('ended', nextTrack);
+
+// ===== ИГРА =====
+var gameActive = false, gameScore = 0, gameCombo = 1, gameTimer = 30, gameBombs = 0, gameInt = null, gameSpawn = null;
+function stopGameTimers() { gameActive = false; clearInterval(gameInt); clearInterval(gameSpawn); }
+function startGame() {
+  var cv = $('gameCanvas');
+  cv.querySelectorAll('.game-obj,.game-over-overlay').forEach(function(o){ o.remove(); });
+  gameScore = 0; gameCombo = 1; gameTimer = 30; gameBombs = 0; gameActive = true;
+  $('gameScore').textContent = '❤️ 0'; $('gameCombo').textContent = 'x1'; $('gameTimer').textContent = '⏱ 30';
+  $('gameStartBtn').style.display = 'none';
+  gameInt = setInterval(function(){ gameTimer--; $('gameTimer').textContent = '⏱ ' + gameTimer; if (gameTimer <= 0) endGame(); }, 1000);
+  gameSpawn = setInterval(spawnObj, 600);
+}
+function spawnObj() {
+  if (!gameActive) return;
+  var cv = $('gameCanvas'), rect = cv.getBoundingClientRect(), bomb = Math.random() < .25;
+  var o = document.createElement('div'); o.className = 'game-obj';
+  o.textContent = bomb ? '💣' : ['❤️','💖','💕','💗','💓','💘','💝'][Math.floor(Math.random() * 7)];
+  o.style.left = Math.floor(Math.random() * (rect.width - 40)) + 'px'; o.style.top = '-40px';
+  var speed = 2 + Math.random() * 3;
+  o.addEventListener('pointerdown', function(e){
+    e.stopPropagation(); if (!gameActive) return;
+    if (bomb) { gameScore = Math.max(0, gameScore - 5); gameCombo = 1; gameBombs++; vibrate(200); }
+    else { gameScore += gameCombo; gameCombo = Math.min(gameCombo + 1, 5); vibrate(30); }
+    $('gameScore').textContent = '❤️ ' + gameScore; $('gameCombo').textContent = 'x' + gameCombo; o.remove();
+  });
+  cv.appendChild(o);
+  (function fall(){
+    if (!gameActive || !o.parentNode) return;
+    var top = (parseFloat(o.style.top) || 0) + speed; o.style.top = top + 'px';
+    if (top > rect.height) { if (!bomb) { gameCombo = 1; $('gameCombo').textContent = 'x1'; } o.remove(); return; }
+    requestAnimationFrame(fall);
+  })();
+}
+function endGame() {
+  stopGameTimers();
+  lsSet('gamesPlayed', lsGet('gamesPlayed', 0) + 1);
+  var best = Math.max(lsGet('gameBest', 0), gameScore); lsSet('gameBest', best);
+  var ov = document.createElement('div'); ov.className = 'game-over-overlay';
+  ov.innerHTML = '<div style="font-size:48px">🏆</div><div style="font-size:28px;font-weight:900">ИГРА ОКОНЧЕНА</div><div style="font-size:22px">Счёт: ' + gameScore + '</div><div style="color:var(--text2)">Рекорд: ' + best + '</div><div style="color:var(--text2)">Бомб поймано: ' + gameBombs + '</div>';
+  $('gameCanvas').appendChild(ov); $('gameStartBtn').style.display = 'inline-block';
+}
+function exitGame() { stopGameTimers(); $('gameStartBtn').style.display = 'inline-block'; showScreen('scrMain'); }
+
+// ===== ПРОВЕРКА ЛИЧНОСТИ =====
+function checkNameInput() {
+  var v = $('nameInput').value.toLowerCase().trim();
+  var vn = ['ваня','иван','вано','иванчик'], vl = ['влад','владик','владос','владислав'];
+  var ok = vn.indexOf(v) >= 0 || vl.indexOf(v) >= 0;
+  $('nameCheck').classList.toggle('visible', ok);
+  selectedVariant = ok ? (vn.indexOf(v) >= 0 ? 'vanya' : 'vlad') : null;
+}
+function confirmName() {
+  if (!selectedVariant) return; vibrate(50); showScreen('scrPersFinal');
+  var txt = selectedVariant === 'vanya'
+    ? 'привет юлечка, моя любимая, это Ваня. Я написал это сообщение год назад, после нашего расставания. Мне очень тяжело писать, ведь телефон промок от слёз, но я до сих пор тебя люблю, просто знай. Я специально купил кулоны, чтобы казаться крутым, записался в качалку, но мы расстались...'
+    : 'Вика привет, Хотел сказать, что да, у нас не годовщина, но я очень люблю тебя до сих пор, и думаю о тебе. Я до сих пор помню тот день когда мы на каток ездили, И я тебе кольцо подарил, и много подарков в телеграмме, но мы расстались, и я лабвьвтлвдпьпл, ой извини, телефон слезами залился. Вообщем я тебя люблю, Но мне надо тебя отпустить.';
+  var el = $('finalMsgText'); el.textContent = ''; $('readConfirmBox').style.opacity = '0';
+  var i = 0;
+  (function type(){ if (i < txt.length) { el.textContent += txt[i++]; setTimeout(type, 25); } else $('readConfirmBox').style.opacity = '1'; })();
+}
+function confirmRead() {
+  vibrate(100); $('readConfirmBox').style.opacity = '0';
+  for (var i = 0; i < 25; i++) (function(n){
+    setTimeout(function(){
+      var h = document.createElement('div'); h.className = 'heart-fall'; h.textContent = '❤️';
+      h.style.left = Math.random() * 100 + '%'; h.style.animationDuration = (2 + Math.random() * 2) + 's'; h.style.fontSize = (20 + Math.random() * 20) + 'px';
+      document.body.appendChild(h); setTimeout(function(){ h.remove(); }, 4000);
+    }, n * 100);
+  })(i);
+  setTimeout(function(){ showScreen('scrMain'); }, 3000);
+}
+
+// ===== СТАРТ =====
+settings = lsGet('appSettings', settings);
+applySettings(); renderStoriesBar(); showScreen('scrMain');
+</script>
+</body>
+</html>
